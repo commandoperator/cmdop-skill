@@ -1,0 +1,2397 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "Cmdop API",
+        "version": "1.0.0",
+        "description": "Complete API documentation for Django CFG Demo Project",
+        "x-django-metadata": {
+            "group": "skills",
+            "apps": [
+                "skills"
+            ],
+            "generator": "django-client",
+            "generator_version": "1.0.0"
+        }
+    },
+    "paths": {
+        "/api/skills/categories/": {
+            "get": {
+                "operationId": "skills_categories_list",
+                "description": "ViewSet for SkillCategory - read-only, public access.",
+                "summary": "List skill categories",
+                "parameters": [
+                    {
+                        "name": "ordering",
+                        "required": false,
+                        "in": "query",
+                        "description": "Which field to use when ordering the results.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "required": false,
+                        "in": "query",
+                        "description": "A search term.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Skills"
+                ],
+                "security": [
+                    {
+                        "jwtAuthWithLastLogin": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/SkillCategory"
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                },
+                "x-async-capable": false
+            }
+        },
+        "/api/skills/categories/{slug}/": {
+            "get": {
+                "operationId": "skills_categories_retrieve",
+                "description": "ViewSet for SkillCategory - read-only, public access.",
+                "summary": "Get category details",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "slug",
+                        "schema": {
+                            "type": "string",
+                            "title": "URL slug"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Skills"
+                ],
+                "security": [
+                    {
+                        "jwtAuthWithLastLogin": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SkillCategory"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                },
+                "x-async-capable": false
+            }
+        },
+        "/api/skills/skills/": {
+            "get": {
+                "operationId": "skills_skills_list",
+                "description": "List public, published skills. Filterable by category, tag, search.",
+                "summary": "List published skills",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "category",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Filter by category slug"
+                    },
+                    {
+                        "name": "ordering",
+                        "required": false,
+                        "in": "query",
+                        "description": "Which field to use when ordering the results.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "required": false,
+                        "in": "query",
+                        "description": "A page number within the paginated result set.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "page_size",
+                        "required": false,
+                        "in": "query",
+                        "description": "Number of results to return per page.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "search",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Search by name/description"
+                    },
+                    {
+                        "in": "query",
+                        "name": "tag",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Filter by tag slug"
+                    }
+                ],
+                "tags": [
+                    "Skills"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedSkillListList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                },
+                "x-async-capable": false
+            },
+            "post": {
+                "operationId": "skills_skills_create",
+                "description": "ViewSet for Skill CRUD and marketplace operations.\n\nPublic endpoints: list, retrieve\nAuthenticated: create, update, delete, star, install, my, versions\nAdmin: verify, suspend",
+                "summary": "Create a new skill",
+                "tags": [
+                    "Skills"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SkillCreateRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SkillCreateRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SkillCreateRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "jwtAuth": []
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SkillCreate"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                },
+                "x-async-capable": false
+            }
+        },
+        "/api/skills/skills/{slug}/": {
+            "get": {
+                "operationId": "skills_skills_retrieve",
+                "description": "ViewSet for Skill CRUD and marketplace operations.\n\nPublic endpoints: list, retrieve\nAuthenticated: create, update, delete, star, install, my, versions\nAdmin: verify, suspend",
+                "summary": "Get skill details",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "slug",
+                        "schema": {
+                            "type": "string",
+                            "title": "URL slug",
+                            "description": "Globally unique slug for this skill"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Skills"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SkillDetail"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                },
+                "x-async-capable": false
+            },
+            "put": {
+                "operationId": "skills_skills_update",
+                "description": "ViewSet for Skill CRUD and marketplace operations.\n\nPublic endpoints: list, retrieve\nAuthenticated: create, update, delete, star, install, my, versions\nAdmin: verify, suspend",
+                "summary": "Update a skill",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "slug",
+                        "schema": {
+                            "type": "string",
+                            "title": "URL slug",
+                            "description": "Globally unique slug for this skill"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Skills"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SkillUpdateRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SkillUpdateRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SkillUpdateRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "jwtAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SkillUpdate"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                },
+                "x-async-capable": false
+            },
+            "patch": {
+                "operationId": "skills_skills_partial_update",
+                "description": "ViewSet for Skill CRUD and marketplace operations.\n\nPublic endpoints: list, retrieve\nAuthenticated: create, update, delete, star, install, my, versions\nAdmin: verify, suspend",
+                "summary": "Partially update a skill",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "slug",
+                        "schema": {
+                            "type": "string",
+                            "title": "URL slug",
+                            "description": "Globally unique slug for this skill"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Skills"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedSkillUpdateRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedSkillUpdateRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedSkillUpdateRequest"
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "jwtAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SkillUpdate"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                },
+                "x-async-capable": false
+            },
+            "delete": {
+                "operationId": "skills_skills_destroy",
+                "description": "ViewSet for Skill CRUD and marketplace operations.\n\nPublic endpoints: list, retrieve\nAuthenticated: create, update, delete, star, install, my, versions\nAdmin: verify, suspend",
+                "summary": "Delete a skill",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "slug",
+                        "schema": {
+                            "type": "string",
+                            "title": "URL slug",
+                            "description": "Globally unique slug for this skill"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Skills"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No response body"
+                    }
+                },
+                "x-async-capable": false
+            }
+        },
+        "/api/skills/skills/{slug}/install/": {
+            "post": {
+                "operationId": "skills_skills_install_create",
+                "description": "Record an install and return all skill files with package dependencies.",
+                "summary": "Install a skill",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "slug",
+                        "schema": {
+                            "type": "string",
+                            "title": "URL slug",
+                            "description": "Globally unique slug for this skill"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Skills"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SkillInstall"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                },
+                "x-async-capable": false
+            }
+        },
+        "/api/skills/skills/{slug}/reviews/": {
+            "get": {
+                "operationId": "skills_skills_reviews_list",
+                "description": "Paginated list of visible reviews for a skill, ordered by newest first.",
+                "summary": "List reviews for a skill",
+                "parameters": [
+                    {
+                        "name": "ordering",
+                        "required": false,
+                        "in": "query",
+                        "description": "Which field to use when ordering the results.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "required": false,
+                        "in": "query",
+                        "description": "A page number within the paginated result set.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "page_size",
+                        "required": false,
+                        "in": "query",
+                        "description": "Number of results to return per page.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "required": false,
+                        "in": "query",
+                        "description": "A search term.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "path",
+                        "name": "slug",
+                        "schema": {
+                            "type": "string",
+                            "title": "URL slug",
+                            "description": "Globally unique slug for this skill"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Skills"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedSkillReviewList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                },
+                "x-async-capable": false
+            }
+        },
+        "/api/skills/skills/{slug}/star/": {
+            "post": {
+                "operationId": "skills_skills_star_create",
+                "description": "Star or unstar a skill. Returns new state.",
+                "summary": "Toggle star on a skill",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "slug",
+                        "schema": {
+                            "type": "string",
+                            "title": "URL slug",
+                            "description": "Globally unique slug for this skill"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Skills"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SkillStar"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                },
+                "x-async-capable": false
+            }
+        },
+        "/api/skills/skills/{slug}/suspend/": {
+            "post": {
+                "operationId": "skills_skills_suspend_create",
+                "description": "Suspend a skill.",
+                "summary": "Suspend a skill (admin only)",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "slug",
+                        "schema": {
+                            "type": "string",
+                            "title": "URL slug",
+                            "description": "Globally unique slug for this skill"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Skills"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SkillListRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SkillListRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SkillListRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "jwtAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Skill suspended"
+                    },
+                    "403": {
+                        "description": "Admin only"
+                    }
+                },
+                "x-async-capable": false
+            }
+        },
+        "/api/skills/skills/{slug}/upload-cover/": {
+            "post": {
+                "operationId": "skills_skills_upload_cover_create",
+                "description": "POST: Upload/replace cover image. DELETE: Remove cover. Only the author can do this.",
+                "summary": "Upload or delete cover image",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "slug",
+                        "schema": {
+                            "type": "string",
+                            "title": "URL slug",
+                            "description": "Globally unique slug for this skill"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Skills"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SkillUploadCoverRequestRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SkillUploadCoverRequestRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SkillUploadCoverRequestRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "jwtAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SkillUploadCoverResponse"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "204": {
+                        "description": "Cover removed"
+                    }
+                },
+                "x-async-capable": false
+            },
+            "delete": {
+                "operationId": "skills_skills_upload_cover_destroy",
+                "description": "POST: Upload/replace cover image. DELETE: Remove cover. Only the author can do this.",
+                "summary": "Upload or delete cover image",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "slug",
+                        "schema": {
+                            "type": "string",
+                            "title": "URL slug",
+                            "description": "Globally unique slug for this skill"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Skills"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SkillUploadCoverResponse"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "204": {
+                        "description": "Cover removed"
+                    }
+                },
+                "x-async-capable": false
+            }
+        },
+        "/api/skills/skills/{slug}/verify/": {
+            "post": {
+                "operationId": "skills_skills_verify_create",
+                "description": "Toggle is_verified on a skill.",
+                "summary": "Toggle skill verification (admin only)",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "slug",
+                        "schema": {
+                            "type": "string",
+                            "title": "URL slug",
+                            "description": "Globally unique slug for this skill"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Skills"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SkillListRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SkillListRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SkillListRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "jwtAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Verification toggled"
+                    },
+                    "403": {
+                        "description": "Admin only"
+                    }
+                },
+                "x-async-capable": false
+            }
+        },
+        "/api/skills/skills/{slug}/versions/": {
+            "get": {
+                "operationId": "skills_skills_versions_list",
+                "description": "Get all versions of a skill.",
+                "summary": "List skill versions",
+                "parameters": [
+                    {
+                        "name": "ordering",
+                        "required": false,
+                        "in": "query",
+                        "description": "Which field to use when ordering the results.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "required": false,
+                        "in": "query",
+                        "description": "A search term.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "path",
+                        "name": "slug",
+                        "schema": {
+                            "type": "string",
+                            "title": "URL slug",
+                            "description": "Globally unique slug for this skill"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Skills"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/SkillVersion"
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                },
+                "x-async-capable": false
+            }
+        },
+        "/api/skills/skills/{slug}/versions/create/": {
+            "post": {
+                "operationId": "skills_skills_versions_create_create",
+                "description": "Publish a new version of a skill. Only the author can do this.",
+                "summary": "Create a new skill version",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "slug",
+                        "schema": {
+                            "type": "string",
+                            "title": "URL slug",
+                            "description": "Globally unique slug for this skill"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Skills"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SkillVersionCreateRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SkillVersionCreateRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SkillVersionCreateRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "jwtAuth": []
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SkillVersion"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                },
+                "x-async-capable": false
+            }
+        },
+        "/api/skills/skills/my/": {
+            "get": {
+                "operationId": "skills_skills_my_list",
+                "description": "Returns all skills authored by the current user, including private and draft.",
+                "summary": "List current user's skills",
+                "parameters": [
+                    {
+                        "name": "ordering",
+                        "required": false,
+                        "in": "query",
+                        "description": "Which field to use when ordering the results.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "required": false,
+                        "in": "query",
+                        "description": "A page number within the paginated result set.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "page_size",
+                        "required": false,
+                        "in": "query",
+                        "description": "Number of results to return per page.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "required": false,
+                        "in": "query",
+                        "description": "A search term.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Skills"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedSkillListList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                },
+                "x-async-capable": false
+            }
+        },
+        "/api/skills/tags/": {
+            "get": {
+                "operationId": "skills_tags_list",
+                "description": "ViewSet for SkillTag - read-only, public access.",
+                "summary": "List skill tags",
+                "parameters": [
+                    {
+                        "name": "ordering",
+                        "required": false,
+                        "in": "query",
+                        "description": "Which field to use when ordering the results.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "required": false,
+                        "in": "query",
+                        "description": "A search term.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Skills"
+                ],
+                "security": [
+                    {
+                        "jwtAuthWithLastLogin": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/SkillTag"
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                },
+                "x-async-capable": false
+            }
+        },
+        "/api/skills/tags/{slug}/": {
+            "get": {
+                "operationId": "skills_tags_retrieve",
+                "description": "ViewSet for SkillTag - read-only, public access.",
+                "summary": "Get tag details",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "slug",
+                        "schema": {
+                            "type": "string",
+                            "title": "URL slug"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Skills"
+                ],
+                "security": [
+                    {
+                        "jwtAuthWithLastLogin": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SkillTag"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                },
+                "x-async-capable": false
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "PaginatedSkillListList": {
+                "type": "object",
+                "required": [
+                    "count",
+                    "page",
+                    "pages",
+                    "page_size",
+                    "has_next",
+                    "has_previous",
+                    "results"
+                ],
+                "properties": {
+                    "count": {
+                        "type": "integer",
+                        "description": "Total number of items across all pages",
+                        "example": 150
+                    },
+                    "page": {
+                        "type": "integer",
+                        "description": "Current page number (1-based)",
+                        "example": 2
+                    },
+                    "pages": {
+                        "type": "integer",
+                        "description": "Total number of pages",
+                        "example": 15
+                    },
+                    "page_size": {
+                        "type": "integer",
+                        "description": "Number of items per page",
+                        "example": 10
+                    },
+                    "has_next": {
+                        "type": "boolean",
+                        "description": "Whether there is a next page",
+                        "example": true
+                    },
+                    "has_previous": {
+                        "type": "boolean",
+                        "description": "Whether there is a previous page",
+                        "example": true
+                    },
+                    "next_page": {
+                        "type": "integer",
+                        "nullable": true,
+                        "description": "Next page number (null if no next page)",
+                        "example": 3
+                    },
+                    "previous_page": {
+                        "type": "integer",
+                        "nullable": true,
+                        "description": "Previous page number (null if no previous page)",
+                        "example": 1
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/SkillList"
+                        },
+                        "description": "Array of items for current page"
+                    }
+                }
+            },
+            "PaginatedSkillReviewList": {
+                "type": "object",
+                "required": [
+                    "count",
+                    "page",
+                    "pages",
+                    "page_size",
+                    "has_next",
+                    "has_previous",
+                    "results"
+                ],
+                "properties": {
+                    "count": {
+                        "type": "integer",
+                        "description": "Total number of items across all pages",
+                        "example": 150
+                    },
+                    "page": {
+                        "type": "integer",
+                        "description": "Current page number (1-based)",
+                        "example": 2
+                    },
+                    "pages": {
+                        "type": "integer",
+                        "description": "Total number of pages",
+                        "example": 15
+                    },
+                    "page_size": {
+                        "type": "integer",
+                        "description": "Number of items per page",
+                        "example": 10
+                    },
+                    "has_next": {
+                        "type": "boolean",
+                        "description": "Whether there is a next page",
+                        "example": true
+                    },
+                    "has_previous": {
+                        "type": "boolean",
+                        "description": "Whether there is a previous page",
+                        "example": true
+                    },
+                    "next_page": {
+                        "type": "integer",
+                        "nullable": true,
+                        "description": "Next page number (null if no next page)",
+                        "example": 3
+                    },
+                    "previous_page": {
+                        "type": "integer",
+                        "nullable": true,
+                        "description": "Previous page number (null if no previous page)",
+                        "example": 1
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/SkillReview"
+                        },
+                        "description": "Array of items for current page"
+                    }
+                }
+            },
+            "PatchedSkillUpdateRequest": {
+                "type": "object",
+                "description": "Serializer for updating a skill.",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "title": "Skill name",
+                        "maxLength": 150
+                    },
+                    "short_description": {
+                        "type": "string",
+                        "description": "Brief summary shown on skill cards",
+                        "maxLength": 300
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "Full description with markdown support"
+                    },
+                    "category": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "uuid"
+                    },
+                    "tags": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    "visibility": {
+                        "enum": [
+                            "public",
+                            "private"
+                        ],
+                        "type": "string",
+                        "description": "* `public` - Public\n* `private` - Private",
+                        "x-spec-enum-id": "076d8e197dd30156"
+                    },
+                    "status": {
+                        "enum": [
+                            "draft",
+                            "published",
+                            "suspended"
+                        ],
+                        "type": "string",
+                        "description": "* `draft` - Draft\n* `published` - Published\n* `suspended` - Suspended",
+                        "x-spec-enum-id": "538d629e833ac594"
+                    },
+                    "icon": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "binary"
+                    },
+                    "cover": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "binary"
+                    },
+                    "repository_url": {
+                        "type": "string",
+                        "format": "uri",
+                        "description": "Link to source code repository",
+                        "maxLength": 200
+                    }
+                }
+            },
+            "SkillCategory": {
+                "type": "object",
+                "description": "Serializer for SkillCategory model.",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true
+                    },
+                    "name": {
+                        "type": "string",
+                        "title": "Category name",
+                        "maxLength": 100
+                    },
+                    "slug": {
+                        "type": "string",
+                        "readOnly": true,
+                        "title": "URL slug",
+                        "pattern": "^[-a-zA-Z0-9_]+$"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "icon": {
+                        "type": "string",
+                        "description": "Icon identifier (e.g., material icon name)",
+                        "maxLength": 50
+                    },
+                    "ordering": {
+                        "type": "integer",
+                        "maximum": 2147483647,
+                        "minimum": 0,
+                        "title": "Display ordering"
+                    },
+                    "skill_count": {
+                        "type": "integer",
+                        "readOnly": true,
+                        "default": 0
+                    }
+                },
+                "required": [
+                    "id",
+                    "name",
+                    "skill_count",
+                    "slug"
+                ]
+            },
+            "SkillCreate": {
+                "type": "object",
+                "description": "Serializer for creating a skill.",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "title": "Skill name",
+                        "maxLength": 150
+                    },
+                    "short_description": {
+                        "type": "string",
+                        "description": "Brief summary shown on skill cards",
+                        "maxLength": 300
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "Full description with markdown support"
+                    },
+                    "category": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "uuid"
+                    },
+                    "tags": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    "visibility": {
+                        "enum": [
+                            "public",
+                            "private"
+                        ],
+                        "type": "string",
+                        "description": "* `public` - Public\n* `private` - Private",
+                        "x-spec-enum-id": "076d8e197dd30156"
+                    },
+                    "icon": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "uri"
+                    },
+                    "cover": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "uri"
+                    },
+                    "repository_url": {
+                        "type": "string",
+                        "format": "uri",
+                        "description": "Link to source code repository",
+                        "maxLength": 200
+                    }
+                },
+                "required": [
+                    "name"
+                ]
+            },
+            "SkillCreateRequest": {
+                "type": "object",
+                "description": "Serializer for creating a skill.",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "title": "Skill name",
+                        "maxLength": 150
+                    },
+                    "short_description": {
+                        "type": "string",
+                        "description": "Brief summary shown on skill cards",
+                        "maxLength": 300
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "Full description with markdown support"
+                    },
+                    "category": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "uuid"
+                    },
+                    "tags": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    "visibility": {
+                        "enum": [
+                            "public",
+                            "private"
+                        ],
+                        "type": "string",
+                        "description": "* `public` - Public\n* `private` - Private",
+                        "x-spec-enum-id": "076d8e197dd30156"
+                    },
+                    "icon": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "binary"
+                    },
+                    "cover": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "binary"
+                    },
+                    "repository_url": {
+                        "type": "string",
+                        "format": "uri",
+                        "description": "Link to source code repository",
+                        "maxLength": 200
+                    }
+                },
+                "required": [
+                    "name"
+                ]
+            },
+            "SkillDetail": {
+                "type": "object",
+                "description": "Serializer for skill detail view (full data).",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true
+                    },
+                    "slug": {
+                        "type": "string",
+                        "readOnly": true,
+                        "title": "URL slug",
+                        "description": "Globally unique slug for this skill",
+                        "pattern": "^[-a-zA-Z0-9_]+$"
+                    },
+                    "name": {
+                        "type": "string",
+                        "title": "Skill name",
+                        "maxLength": 150
+                    },
+                    "short_description": {
+                        "type": "string",
+                        "description": "Brief summary shown on skill cards",
+                        "maxLength": 300
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "Full description with markdown support"
+                    },
+                    "author": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "author_username": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "category": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/SkillCategory"
+                            }
+                        ],
+                        "readOnly": true
+                    },
+                    "tags": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/SkillTag"
+                        },
+                        "readOnly": true
+                    },
+                    "visibility": {
+                        "enum": [
+                            "public",
+                            "private"
+                        ],
+                        "type": "string",
+                        "description": "* `public` - Public\n* `private` - Private",
+                        "x-spec-enum-id": "076d8e197dd30156"
+                    },
+                    "status": {
+                        "enum": [
+                            "draft",
+                            "published",
+                            "suspended"
+                        ],
+                        "type": "string",
+                        "description": "* `draft` - Draft\n* `published` - Published\n* `suspended` - Suspended",
+                        "x-spec-enum-id": "538d629e833ac594"
+                    },
+                    "is_verified": {
+                        "type": "boolean",
+                        "readOnly": true,
+                        "title": "Verified",
+                        "description": "Admin-verified trusted skill"
+                    },
+                    "icon": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "uri",
+                        "description": "Card thumbnail image"
+                    },
+                    "cover": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "uri",
+                        "title": "Cover image",
+                        "description": "Detail page banner image"
+                    },
+                    "install_count": {
+                        "type": "integer",
+                        "readOnly": true,
+                        "description": "Denormalized install counter"
+                    },
+                    "star_count": {
+                        "type": "integer",
+                        "readOnly": true,
+                        "description": "Denormalized star counter"
+                    },
+                    "download_count": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "repository_url": {
+                        "type": "string",
+                        "format": "uri",
+                        "description": "Link to source code repository",
+                        "maxLength": 200
+                    },
+                    "latest_version": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/SkillVersion"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "readOnly": true
+                    },
+                    "is_starred": {
+                        "type": [
+                            "boolean",
+                            "null"
+                        ],
+                        "readOnly": true
+                    },
+                    "reviews": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/SkillReview"
+                        },
+                        "readOnly": true
+                    },
+                    "review_count": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "upstream_author_name": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "upstream_author_avatar": {
+                        "type": "string",
+                        "format": "uri",
+                        "readOnly": true
+                    },
+                    "upstream_author_url": {
+                        "type": "string",
+                        "format": "uri",
+                        "readOnly": true
+                    },
+                    "upstream_github_url": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "upstream_npm_package": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "upstream_license": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "author",
+                    "author_username",
+                    "category",
+                    "created_at",
+                    "download_count",
+                    "id",
+                    "install_count",
+                    "is_starred",
+                    "is_verified",
+                    "latest_version",
+                    "name",
+                    "review_count",
+                    "reviews",
+                    "slug",
+                    "star_count",
+                    "tags",
+                    "updated_at",
+                    "upstream_author_avatar",
+                    "upstream_author_name",
+                    "upstream_author_url",
+                    "upstream_github_url",
+                    "upstream_license",
+                    "upstream_npm_package"
+                ]
+            },
+            "SkillFile": {
+                "type": "object",
+                "description": "Serializer for a single file in a skill version.",
+                "properties": {
+                    "path": {
+                        "type": "string",
+                        "description": "Relative file path, e.g. \"skill.md\", \"run.py\""
+                    },
+                    "content": {
+                        "type": "string",
+                        "description": "UTF-8 text content"
+                    }
+                },
+                "required": [
+                    "content",
+                    "path"
+                ]
+            },
+            "SkillFileRequest": {
+                "type": "object",
+                "description": "Serializer for a single file in a skill version.",
+                "properties": {
+                    "path": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Relative file path, e.g. \"skill.md\", \"run.py\""
+                    },
+                    "content": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "UTF-8 text content"
+                    }
+                },
+                "required": [
+                    "content",
+                    "path"
+                ]
+            },
+            "SkillInstall": {
+                "type": "object",
+                "description": "Response serializer for install action.",
+                "properties": {
+                    "slug": {
+                        "type": "string",
+                        "description": "Skill slug"
+                    },
+                    "version": {
+                        "type": "string",
+                        "description": "Version installed"
+                    },
+                    "install_count": {
+                        "type": "integer",
+                        "description": "Updated install count"
+                    },
+                    "files": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/SkillFile"
+                        },
+                        "description": "All files that make up this skill"
+                    },
+                    "packages": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/SkillPackages"
+                            }
+                        ],
+                        "description": "Package dependencies derived from skill files"
+                    }
+                },
+                "required": [
+                    "files",
+                    "install_count",
+                    "packages",
+                    "slug",
+                    "version"
+                ]
+            },
+            "SkillList": {
+                "type": "object",
+                "description": "Serializer for skill list view (lightweight).",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true
+                    },
+                    "slug": {
+                        "type": "string",
+                        "readOnly": true,
+                        "title": "URL slug",
+                        "description": "Globally unique slug for this skill",
+                        "pattern": "^[-a-zA-Z0-9_]+$"
+                    },
+                    "name": {
+                        "type": "string",
+                        "title": "Skill name",
+                        "maxLength": 150
+                    },
+                    "short_description": {
+                        "type": "string",
+                        "description": "Brief summary shown on skill cards",
+                        "maxLength": 300
+                    },
+                    "author": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "author_username": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "category": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "uuid"
+                    },
+                    "category_name": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "readOnly": true
+                    },
+                    "tags": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/SkillTag"
+                        },
+                        "readOnly": true
+                    },
+                    "visibility": {
+                        "enum": [
+                            "public",
+                            "private"
+                        ],
+                        "type": "string",
+                        "description": "* `public` - Public\n* `private` - Private",
+                        "x-spec-enum-id": "076d8e197dd30156"
+                    },
+                    "status": {
+                        "enum": [
+                            "draft",
+                            "published",
+                            "suspended"
+                        ],
+                        "type": "string",
+                        "description": "* `draft` - Draft\n* `published` - Published\n* `suspended` - Suspended",
+                        "x-spec-enum-id": "538d629e833ac594"
+                    },
+                    "is_verified": {
+                        "type": "boolean",
+                        "readOnly": true,
+                        "title": "Verified",
+                        "description": "Admin-verified trusted skill"
+                    },
+                    "icon": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "uri",
+                        "description": "Card thumbnail image"
+                    },
+                    "cover": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "uri",
+                        "title": "Cover image",
+                        "description": "Detail page banner image"
+                    },
+                    "install_count": {
+                        "type": "integer",
+                        "readOnly": true,
+                        "description": "Denormalized install counter"
+                    },
+                    "star_count": {
+                        "type": "integer",
+                        "readOnly": true,
+                        "description": "Denormalized star counter"
+                    },
+                    "download_count": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "review_count": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "is_starred": {
+                        "type": [
+                            "boolean",
+                            "null"
+                        ],
+                        "readOnly": true
+                    },
+                    "upstream_author_name": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "upstream_author_avatar": {
+                        "type": "string",
+                        "format": "uri",
+                        "readOnly": true
+                    },
+                    "upstream_author_url": {
+                        "type": "string",
+                        "format": "uri",
+                        "readOnly": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "author",
+                    "author_username",
+                    "category_name",
+                    "created_at",
+                    "download_count",
+                    "id",
+                    "install_count",
+                    "is_starred",
+                    "is_verified",
+                    "name",
+                    "review_count",
+                    "slug",
+                    "star_count",
+                    "tags",
+                    "updated_at",
+                    "upstream_author_avatar",
+                    "upstream_author_name",
+                    "upstream_author_url"
+                ]
+            },
+            "SkillListRequest": {
+                "type": "object",
+                "description": "Serializer for skill list view (lightweight).",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "title": "Skill name",
+                        "maxLength": 150
+                    },
+                    "short_description": {
+                        "type": "string",
+                        "description": "Brief summary shown on skill cards",
+                        "maxLength": 300
+                    },
+                    "category": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "uuid"
+                    },
+                    "visibility": {
+                        "enum": [
+                            "public",
+                            "private"
+                        ],
+                        "type": "string",
+                        "description": "* `public` - Public\n* `private` - Private",
+                        "x-spec-enum-id": "076d8e197dd30156"
+                    },
+                    "status": {
+                        "enum": [
+                            "draft",
+                            "published",
+                            "suspended"
+                        ],
+                        "type": "string",
+                        "description": "* `draft` - Draft\n* `published` - Published\n* `suspended` - Suspended",
+                        "x-spec-enum-id": "538d629e833ac594"
+                    },
+                    "icon": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "binary",
+                        "description": "Card thumbnail image"
+                    },
+                    "cover": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "binary",
+                        "title": "Cover image",
+                        "description": "Detail page banner image"
+                    }
+                },
+                "required": [
+                    "name"
+                ]
+            },
+            "SkillPackages": {
+                "type": "object",
+                "description": "Package dependencies for a skill.",
+                "properties": {
+                    "pip": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "description": "pip packages to install, e.g. [\"httpx>=0.24\", \"pydantic>=2.0\"]"
+                    },
+                    "npm": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "description": "npm packages to install, e.g. [\"axios@^1.0\"]"
+                    }
+                }
+            },
+            "SkillReview": {
+                "type": "object",
+                "description": "Serializer for SkillReview in API responses.",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true
+                    },
+                    "author_handle": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "author_display_name": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "author_avatar_url": {
+                        "type": "string",
+                        "format": "uri",
+                        "readOnly": true
+                    },
+                    "body": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "is_rewritten": {
+                        "type": "boolean",
+                        "readOnly": true
+                    },
+                    "source": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "upstream_created_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time",
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "author_avatar_url",
+                    "author_display_name",
+                    "author_handle",
+                    "body",
+                    "id",
+                    "is_rewritten",
+                    "source",
+                    "upstream_created_at"
+                ]
+            },
+            "SkillStar": {
+                "type": "object",
+                "description": "Response serializer for star toggle action.",
+                "properties": {
+                    "starred": {
+                        "type": "boolean",
+                        "description": "Whether the skill is now starred"
+                    },
+                    "star_count": {
+                        "type": "integer",
+                        "description": "Updated star count"
+                    }
+                },
+                "required": [
+                    "star_count",
+                    "starred"
+                ]
+            },
+            "SkillTag": {
+                "type": "object",
+                "description": "Serializer for SkillTag model.",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true
+                    },
+                    "name": {
+                        "type": "string",
+                        "title": "Tag name",
+                        "maxLength": 50
+                    },
+                    "slug": {
+                        "type": "string",
+                        "readOnly": true,
+                        "title": "URL slug",
+                        "pattern": "^[-a-zA-Z0-9_]+$"
+                    }
+                },
+                "required": [
+                    "id",
+                    "name",
+                    "slug"
+                ]
+            },
+            "SkillTagRequest": {
+                "type": "object",
+                "description": "Serializer for SkillTag model.",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "title": "Tag name",
+                        "maxLength": 50
+                    }
+                },
+                "required": [
+                    "name"
+                ]
+            },
+            "SkillUpdate": {
+                "type": "object",
+                "description": "Serializer for updating a skill.",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "title": "Skill name",
+                        "maxLength": 150
+                    },
+                    "short_description": {
+                        "type": "string",
+                        "description": "Brief summary shown on skill cards",
+                        "maxLength": 300
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "Full description with markdown support"
+                    },
+                    "category": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "uuid"
+                    },
+                    "tags": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    "visibility": {
+                        "enum": [
+                            "public",
+                            "private"
+                        ],
+                        "type": "string",
+                        "description": "* `public` - Public\n* `private` - Private",
+                        "x-spec-enum-id": "076d8e197dd30156"
+                    },
+                    "status": {
+                        "enum": [
+                            "draft",
+                            "published",
+                            "suspended"
+                        ],
+                        "type": "string",
+                        "description": "* `draft` - Draft\n* `published` - Published\n* `suspended` - Suspended",
+                        "x-spec-enum-id": "538d629e833ac594"
+                    },
+                    "icon": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "uri"
+                    },
+                    "cover": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "uri"
+                    },
+                    "repository_url": {
+                        "type": "string",
+                        "format": "uri",
+                        "description": "Link to source code repository",
+                        "maxLength": 200
+                    }
+                },
+                "required": [
+                    "name"
+                ]
+            },
+            "SkillUpdateRequest": {
+                "type": "object",
+                "description": "Serializer for updating a skill.",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "title": "Skill name",
+                        "maxLength": 150
+                    },
+                    "short_description": {
+                        "type": "string",
+                        "description": "Brief summary shown on skill cards",
+                        "maxLength": 300
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "Full description with markdown support"
+                    },
+                    "category": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "uuid"
+                    },
+                    "tags": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    "visibility": {
+                        "enum": [
+                            "public",
+                            "private"
+                        ],
+                        "type": "string",
+                        "description": "* `public` - Public\n* `private` - Private",
+                        "x-spec-enum-id": "076d8e197dd30156"
+                    },
+                    "status": {
+                        "enum": [
+                            "draft",
+                            "published",
+                            "suspended"
+                        ],
+                        "type": "string",
+                        "description": "* `draft` - Draft\n* `published` - Published\n* `suspended` - Suspended",
+                        "x-spec-enum-id": "538d629e833ac594"
+                    },
+                    "icon": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "binary"
+                    },
+                    "cover": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "binary"
+                    },
+                    "repository_url": {
+                        "type": "string",
+                        "format": "uri",
+                        "description": "Link to source code repository",
+                        "maxLength": 200
+                    }
+                },
+                "required": [
+                    "name"
+                ]
+            },
+            "SkillUploadCoverRequestRequest": {
+                "type": "object",
+                "description": "Request serializer for cover image upload.",
+                "properties": {
+                    "cover": {
+                        "type": "string",
+                        "format": "binary",
+                        "description": "Cover image file"
+                    }
+                },
+                "required": [
+                    "cover"
+                ]
+            },
+            "SkillUploadCoverResponse": {
+                "type": "object",
+                "description": "Response serializer for cover image upload.",
+                "properties": {
+                    "cover": {
+                        "type": "string",
+                        "format": "uri",
+                        "description": "URL of the uploaded cover image"
+                    }
+                },
+                "required": [
+                    "cover"
+                ]
+            },
+            "SkillVersion": {
+                "type": "object",
+                "description": "Serializer for SkillVersion model.",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true
+                    },
+                    "skill": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true
+                    },
+                    "version": {
+                        "type": "string",
+                        "description": "Semantic version string (e.g., 1.0.0)",
+                        "maxLength": 20
+                    },
+                    "files": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/SkillFile"
+                        },
+                        "readOnly": true
+                    },
+                    "changelog": {
+                        "type": "string",
+                        "description": "What changed in this version"
+                    },
+                    "source_archive": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "uri",
+                        "readOnly": true
+                    },
+                    "is_latest": {
+                        "type": "boolean",
+                        "readOnly": true,
+                        "description": "Denormalized flag: only one version per skill should be latest"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "created_at",
+                    "files",
+                    "id",
+                    "is_latest",
+                    "skill",
+                    "source_archive",
+                    "version"
+                ]
+            },
+            "SkillVersionCreateRequest": {
+                "type": "object",
+                "description": "Serializer for creating a new skill version.",
+                "properties": {
+                    "version": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Semantic version (e.g., 1.0.0)",
+                        "maxLength": 20
+                    },
+                    "files": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/SkillFileRequest"
+                        },
+                        "description": "List of files that make up the skill"
+                    },
+                    "changelog": {
+                        "type": "string",
+                        "minLength": 1,
+                        "default": "",
+                        "description": "What changed"
+                    }
+                },
+                "required": [
+                    "files",
+                    "version"
+                ]
+            }
+        },
+        "securitySchemes": {
+            "jwtAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
+            },
+            "jwtAuthWithLastLogin": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
+            }
+        }
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8000"
+        }
+    ]
+}
