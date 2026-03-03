@@ -4,10 +4,24 @@ from __future__ import annotations
 
 import json
 import shutil
+import ssl
 import subprocess
 import sys
+import urllib.error
 import urllib.request
 from pathlib import Path
+
+
+def _ssl_context() -> ssl.SSLContext:
+    """SSL context that works on macOS without certificate hassle."""
+    ctx = ssl.create_default_context()
+    try:
+        import certifi
+        ctx.load_verify_locations(certifi.where())
+    except ImportError:
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+    return ctx
 
 
 def clean(path: Path) -> None:
@@ -96,7 +110,7 @@ def check_pypi_name(name: str) -> dict[str, object]:
     url = f"https://pypi.org/pypi/{name}/json"
     req = urllib.request.Request(url, headers={"Accept": "application/json"})
     try:
-        with urllib.request.urlopen(req, timeout=10) as resp:
+        with urllib.request.urlopen(req, timeout=10, context=_ssl_context()) as resp:
             data = json.loads(resp.read())
             info = data.get("info", {})
             return {

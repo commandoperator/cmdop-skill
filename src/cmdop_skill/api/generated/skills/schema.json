@@ -1232,8 +1232,10 @@
                         "type": "array",
                         "items": {
                             "type": "string",
-                            "format": "uuid"
-                        }
+                            "minLength": 1,
+                            "maxLength": 50
+                        },
+                        "description": "Tag names (strings). Tags are created automatically."
                     },
                     "visibility": {
                         "enum": [
@@ -1352,8 +1354,9 @@
                         "type": "array",
                         "items": {
                             "type": "string",
-                            "format": "uuid"
-                        }
+                            "maxLength": 50
+                        },
+                        "description": "Tag names (strings). Tags are created automatically."
                     },
                     "visibility": {
                         "enum": [
@@ -1419,8 +1422,10 @@
                         "type": "array",
                         "items": {
                             "type": "string",
-                            "format": "uuid"
-                        }
+                            "minLength": 1,
+                            "maxLength": 50
+                        },
+                        "description": "Tag names (strings). Tags are created automatically."
                     },
                     "visibility": {
                         "enum": [
@@ -2135,8 +2140,9 @@
                         "type": "array",
                         "items": {
                             "type": "string",
-                            "format": "uuid"
-                        }
+                            "maxLength": 50
+                        },
+                        "description": "Tag names (strings). Tags are created automatically."
                     },
                     "visibility": {
                         "enum": [
@@ -2212,8 +2218,10 @@
                         "type": "array",
                         "items": {
                             "type": "string",
-                            "format": "uuid"
-                        }
+                            "minLength": 1,
+                            "maxLength": 50
+                        },
+                        "description": "Tag names (strings). Tags are created automatically."
                     },
                     "visibility": {
                         "enum": [

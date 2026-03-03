@@ -153,7 +153,7 @@ class SkillCreateRequest(BaseModel):
 )
     description: str | None = Field(None, description='Full description with markdown s...')
     category: str | None = None
-    tags: list[str] | None = None
+    tags: list[str] | None = Field(None, description='Tag names (strings). Tags are cr...')
     visibility: PatchedSkillUpdateRequestVisibility | None = Field(
     None,
     description='* `public` - Public * `private` ...',
@@ -189,7 +189,7 @@ class SkillCreate(BaseModel):
 )
     description: str | None = Field(None, description='Full description with markdown s...')
     category: str | None = None
-    tags: list[str] | None = None
+    tags: list[str] | None = Field(None, description='Tag names (strings). Tags are cr...')
     visibility: PatchedSkillUpdateRequestVisibility | None = Field(
     None,
     description='* `public` - Public * `private` ...',
@@ -201,6 +201,30 @@ class SkillCreate(BaseModel):
     description='Link to source code repository',
     max_length=200,
 )
+
+
+
+class SkillReview(BaseModel):
+    """
+    Serializer for SkillReview in API responses.
+
+    Response model (includes read-only fields).
+    """
+
+    model_config = ConfigDict(
+        validate_assignment=True,
+        extra="allow",
+        frozen=False,
+    )
+
+    id: str = ...
+    author_handle: Any = ...
+    author_display_name: Any = ...
+    author_avatar_url: str = ...
+    body: Any = ...
+    is_rewritten: bool = ...
+    source: Any = ...
+    upstream_created_at: datetime.datetime | None = None
 
 
 
@@ -243,30 +267,6 @@ class SkillVersion(BaseModel):
     source_archive: str | None = None
     is_latest: bool = Field(description='Denormalized flag: only one vers...')
     created_at: datetime.datetime = ...
-
-
-
-class SkillReview(BaseModel):
-    """
-    Serializer for SkillReview in API responses.
-
-    Response model (includes read-only fields).
-    """
-
-    model_config = ConfigDict(
-        validate_assignment=True,
-        extra="allow",
-        frozen=False,
-    )
-
-    id: str = ...
-    author_handle: Any = ...
-    author_display_name: Any = ...
-    author_avatar_url: str = ...
-    body: Any = ...
-    is_rewritten: bool = ...
-    source: Any = ...
-    upstream_created_at: datetime.datetime | None = None
 
 
 
@@ -354,7 +354,7 @@ class SkillUpdateRequest(BaseModel):
 )
     description: str | None = Field(None, description='Full description with markdown s...')
     category: str | None = None
-    tags: list[str] | None = None
+    tags: list[str] | None = Field(None, description='Tag names (strings). Tags are cr...')
     visibility: PatchedSkillUpdateRequestVisibility | None = Field(
     None,
     description='* `public` - Public * `private` ...',
@@ -394,7 +394,7 @@ class SkillUpdate(BaseModel):
 )
     description: str | None = Field(None, description='Full description with markdown s...')
     category: str | None = None
-    tags: list[str] | None = None
+    tags: list[str] | None = Field(None, description='Tag names (strings). Tags are cr...')
     visibility: PatchedSkillUpdateRequestVisibility | None = Field(
     None,
     description='* `public` - Public * `private` ...',
@@ -434,7 +434,7 @@ class PatchedSkillUpdateRequest(BaseModel):
 )
     description: str | None = Field(None, description='Full description with markdown s...')
     category: str | None = None
-    tags: list[str] | None = None
+    tags: list[str] | None = Field(None, description='Tag names (strings). Tags are cr...')
     visibility: PatchedSkillUpdateRequestVisibility | None = Field(
     None,
     description='* `public` - Public * `private` ...',
