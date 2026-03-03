@@ -4,9 +4,16 @@ from __future__ import annotations
 
 import base64
 import fnmatch
-import re
+import importlib.util
 from pathlib import Path
 from typing import Any, Literal
+
+import sys
+
+if sys.version_info >= (3, 11):
+    import tomllib
+else:
+    import tomli as tomllib  # type: ignore[no-redef]
 
 IGNORE_DIRS = {
     "__pycache__",
@@ -52,6 +59,11 @@ def _is_ignored_file(name: str) -> bool:
     return any(fnmatch.fnmatch(name, pat) for pat in IGNORE_FILE_PATTERNS)
 
 
+def _has_skill_manifest(path: Path) -> bool:
+    """Return True if *path* contains ``skill/config.py``."""
+    return (path / "skill" / "config.py").is_file()
+
+
 def collect_skill_files(path: Path) -> list[dict[str, Any]]:
     """Collect all publishable files from a skill directory.
 
@@ -65,10 +77,9 @@ def collect_skill_files(path: Path) -> list[dict[str, Any]]:
     if not path.is_dir():
         raise FileNotFoundError(f"Skill directory not found: {path}")
 
-    skill_md = path / "skill.md"
-    if not skill_md.exists():
+    if not _has_skill_manifest(path):
         raise FileNotFoundError(
-            f"skill.md not found in {path}. "
+            f"skill/config.py not found in {path}. "
             "This file is required — it's the skill manifest."
         )
 
@@ -101,43 +112,95 @@ def collect_skill_files(path: Path) -> list[dict[str, Any]]:
     return files
 
 
-def parse_skill_manifest(path: Path) -> dict[str, str]:
-    """Parse YAML frontmatter from skill.md.
+def _load_skill_config(config_path: Path) -> dict[str, Any]:
+    """Load ``skill/config.py`` and return the ``config`` object as dict.
 
-    Extracts simple key: value pairs between --- delimiters.
+    Uses ``importlib.util`` so we never import the skill's own dependencies.
+    """
+    spec = importlib.util.spec_from_file_location("_skill_config", config_path)
+    if spec is None or spec.loader is None:
+        raise ValueError(f"Cannot load module spec from {config_path}")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)  # type: ignore[union-attr]
+
+    config = getattr(mod, "config", None)
+    if config is None:
+        raise ValueError(
+            f"skill/config.py must define a module-level `config` variable "
+            f"(SkillConfig instance): {config_path}"
+        )
+
+    # Accept both SkillConfig (pydantic) and plain dict
+    if hasattr(config, "model_dump"):
+        return config.model_dump()
+    if isinstance(config, dict):
+        return config
+    raise ValueError(
+        f"skill/config.py `config` must be a SkillConfig instance or dict, "
+        f"got {type(config).__name__}"
+    )
+
+
+def _read_pyproject(base: Path) -> dict[str, Any]:
+    """Extract SkillConfig-compatible fields from ``pyproject.toml``."""
+    toml_path = base / "pyproject.toml"
+    if not toml_path.is_file():
+        return {}
+
+    with open(toml_path, "rb") as f:
+        data = tomllib.load(f)
+
+    proj = data.get("project", {})
+    urls = proj.get("urls", {})
+
+    result: dict[str, Any] = {}
+    if proj.get("name"):
+        result["name"] = proj["name"]
+    if proj.get("version"):
+        result["version"] = proj["version"]
+    if proj.get("description"):
+        result["short_description"] = proj["description"]
+        result["description"] = proj["description"]
+    if proj.get("dependencies"):
+        result["requires"] = proj["dependencies"]
+    if proj.get("keywords"):
+        result["tags"] = proj["keywords"]
+    if urls.get("Repository"):
+        result["repository_url"] = urls["Repository"]
+    return result
+
+
+def parse_skill_manifest(path: Path) -> dict[str, Any]:
+    """Load skill manifest from ``skill/config.py``, enriched by ``pyproject.toml``.
+
+    ``pyproject.toml`` fills in missing fields; ``skill/config.py`` always wins.
 
     Returns:
-        Dict with keys like name, version, description.
+        Dict with at least ``name`` and ``version`` keys.
     """
-    skill_md = path / "skill.md" if path.is_dir() else path
-    if not skill_md.exists():
-        raise FileNotFoundError(f"skill.md not found: {skill_md}")
+    base = path if path.is_dir() else path.parent
 
-    text = skill_md.read_text(encoding="utf-8")
+    config_py = base / "skill" / "config.py"
+    if not config_py.is_file():
+        raise FileNotFoundError(
+            f"skill/config.py not found in {base}. "
+            "Create a skill/config.py with a SkillConfig instance."
+        )
 
-    # Extract frontmatter block
-    match = re.match(r"^---\s*\n(.*?)\n---", text, re.DOTALL)
-    if not match:
-        raise ValueError("skill.md is missing YAML frontmatter (--- delimiters)")
+    manifest = _load_skill_config(config_py)
 
-    frontmatter: dict[str, str] = {}
-    for line in match.group(1).splitlines():
-        line = line.strip()
-        if not line or line.startswith("#"):
-            continue
-        colon = line.find(":")
-        if colon == -1:
-            continue
-        key = line[:colon].strip()
-        value = line[colon + 1 :].strip()
-        frontmatter[key] = value
+    # Backfill empty fields from pyproject.toml
+    pyproject = _read_pyproject(base)
+    for key, value in pyproject.items():
+        if not manifest.get(key):
+            manifest[key] = value
 
-    if "name" not in frontmatter:
-        raise ValueError("skill.md frontmatter must contain 'name'")
-    if "version" not in frontmatter:
-        raise ValueError("skill.md frontmatter must contain 'version'")
+    if not manifest.get("version"):
+        raise ValueError(
+            "version is required. Set it in skill/config.py or pyproject.toml."
+        )
 
-    return frontmatter
+    return manifest
 
 
 async def publish_skill(
@@ -148,11 +211,8 @@ async def publish_skill(
 ) -> dict[str, Any]:
     """Publish a skill to the CMDOP marketplace.
 
-    Collects files, parses manifest, creates or updates the skill,
-    and uploads a new version.
-
     Args:
-        path: Path to skill directory (must contain skill.md)
+        path: Path to skill directory (must contain skill/config.py)
         api_key: CMDOP API key (cmdop_*)
         base_url: Custom API base URL (overrides mode)
         mode: Environment mode
@@ -165,10 +225,9 @@ async def publish_skill(
     path = Path(path).resolve()
 
     # 1. Parse manifest
-    manifest = parse_skill_manifest(path)
-    name = manifest["name"]
-    version = manifest["version"]
-    description = manifest.get("description", "")
+    m = parse_skill_manifest(path)
+    name = m["name"]
+    version = m["version"]
 
     # 2. Collect files
     files = collect_skill_files(path)
@@ -190,18 +249,33 @@ async def publish_skill(
 
         # Create skill if new
         if not skill_exists:
-            await api.skills.create(
-                name=name,
-                short_description=description[:200] if description else "",
-                description=description,
-            )
+            create_kwargs: dict[str, Any] = {
+                "name": name,
+                "short_description": m.get("short_description", "")
+                or (m.get("description", "")[:300]),
+                "description": m.get("description", ""),
+            }
+            if m.get("category"):
+                create_kwargs["category"] = m["category"]
+            if m.get("tags"):
+                create_kwargs["tags"] = m["tags"]
+            if m.get("visibility"):
+                create_kwargs["visibility"] = m["visibility"]
+            if m.get("repository_url"):
+                create_kwargs["repository_url"] = m["repository_url"]
+
+            await api.skills.create(**create_kwargs)
 
         # Create version with files
-        ver = await api.skills.create_version(
-            slug=slug,
-            version=version,
-            files=file_payloads,
-        )
+        ver_kwargs: dict[str, Any] = {
+            "slug": slug,
+            "version": version,
+            "files": file_payloads,
+        }
+        if m.get("changelog"):
+            ver_kwargs["changelog"] = m["changelog"]
+
+        ver = await api.skills.create_version(**ver_kwargs)
 
     return {
         "ok": True,

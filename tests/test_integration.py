@@ -116,14 +116,10 @@ class TestMiniSkillEndToEnd:
             assert result["total_sent"] == 2
 
     def test_manifest_generation(self, email_skill: Skill) -> None:
-        md = generate_manifest(email_skill)
-        assert "name: test-email" in md
-        assert "### `send`" in md
-        assert "### `accounts`" in md
-        assert "### `health`" in md
-        assert "### `stats`" in md
-        assert "| `--to` |" in md
-        assert "| `--subject` |" in md
+        py = generate_manifest(email_skill)
+        assert 'from cmdop_skill import SkillConfig' in py
+        assert 'name="test-email"' in py
+        assert 'version="1.0.0"' in py
 
     def test_parser_structure(self, email_skill: Skill) -> None:
         parser = email_skill.build_parser()

@@ -13,23 +13,36 @@ from cmdop_skill._publish import (
     parse_skill_manifest,
 )
 
-SKILL_MD_CONTENT = """\
----
-name: test-skill
-version: 1.0.0
-description: A test skill
----
+SKILL_CONFIG_CONTENT = """\
+from cmdop_skill import SkillConfig
 
+config = SkillConfig(
+    name="test-skill",
+    version="1.0.0",
+    description="A test skill",
+)
+"""
+
+SKILL_README_CONTENT = """\
 # test-skill
 
 A test skill for unit tests.
 """
 
 
+def _make_skill_dir(tmp_path: Path) -> Path:
+    """Create skill/config.py + skill/readme.md in tmp_path."""
+    skill = tmp_path / "skill"
+    skill.mkdir()
+    (skill / "config.py").write_text(SKILL_CONFIG_CONTENT)
+    (skill / "readme.md").write_text(SKILL_README_CONTENT)
+    return tmp_path
+
+
 @pytest.fixture
 def skill_dir(tmp_path: Path) -> Path:
-    """Create a minimal skill directory."""
-    (tmp_path / "skill.md").write_text(SKILL_MD_CONTENT)
+    """Create a minimal skill directory with skill/config.py."""
+    _make_skill_dir(tmp_path)
     (tmp_path / "run.py").write_text("print('hello')\n")
     (tmp_path / "helpers.py").write_text("def helper(): pass\n")
     (tmp_path / "config.json").write_text('{"key": "value"}\n')
@@ -43,7 +56,8 @@ class TestCollectSkillFiles:
     def test_collects_text_files(self, skill_dir: Path) -> None:
         files = collect_skill_files(skill_dir)
         paths = {f["path"] for f in files}
-        assert "skill.md" in paths
+        assert "skill/config.py" in paths
+        assert "skill/readme.md" in paths
         assert "run.py" in paths
         assert "helpers.py" in paths
         assert "config.json" in paths
@@ -79,9 +93,9 @@ class TestCollectSkillFiles:
         with pytest.raises(FileNotFoundError, match="not found"):
             collect_skill_files(tmp_path / "nonexistent")
 
-    def test_raises_if_no_skill_md(self, tmp_path: Path) -> None:
+    def test_raises_if_no_config(self, tmp_path: Path) -> None:
         (tmp_path / "run.py").write_text("pass\n")
-        with pytest.raises(FileNotFoundError, match="skill.md"):
+        with pytest.raises(FileNotFoundError, match="skill/config.py"):
             collect_skill_files(tmp_path)
 
     def test_subdirectory_paths_are_relative(self, skill_dir: Path) -> None:
@@ -175,47 +189,117 @@ class TestIgnorePatterns:
 
 
 class TestParseSkillManifest:
-    def test_parses_basic_frontmatter(self, skill_dir: Path) -> None:
+    def test_parses_config_py(self, skill_dir: Path) -> None:
         result = parse_skill_manifest(skill_dir)
         assert result["name"] == "test-skill"
         assert result["version"] == "1.0.0"
         assert result["description"] == "A test skill"
 
-    def test_accepts_file_path_directly(self, skill_dir: Path) -> None:
-        result = parse_skill_manifest(skill_dir / "skill.md")
-        assert result["name"] == "test-skill"
+    def test_returns_default_fields(self, skill_dir: Path) -> None:
+        result = parse_skill_manifest(skill_dir)
+        assert result["requires"] == []
+        assert result["tags"] == []
 
-    def test_raises_if_no_frontmatter(self, tmp_path: Path) -> None:
-        (tmp_path / "skill.md").write_text("# No frontmatter\n")
-        with pytest.raises(ValueError, match="missing YAML frontmatter"):
+    def test_raises_if_no_config(self, tmp_path: Path) -> None:
+        with pytest.raises(FileNotFoundError, match="skill/config.py"):
             parse_skill_manifest(tmp_path)
 
-    def test_raises_if_no_name(self, tmp_path: Path) -> None:
-        (tmp_path / "skill.md").write_text("---\nversion: 1.0.0\n---\n")
-        with pytest.raises(ValueError, match="name"):
+    def test_raises_if_no_config_var(self, tmp_path: Path) -> None:
+        skill = tmp_path / "skill"
+        skill.mkdir()
+        (skill / "config.py").write_text("x = 1\n")
+        with pytest.raises(ValueError, match="config"):
             parse_skill_manifest(tmp_path)
 
-    def test_raises_if_no_version(self, tmp_path: Path) -> None:
-        (tmp_path / "skill.md").write_text("---\nname: foo\n---\n")
-        with pytest.raises(ValueError, match="version"):
+    def test_raises_on_invalid_config_type(self, tmp_path: Path) -> None:
+        skill = tmp_path / "skill"
+        skill.mkdir()
+        (skill / "config.py").write_text("config = 'not a dict'\n")
+        with pytest.raises(ValueError, match="SkillConfig instance or dict"):
             parse_skill_manifest(tmp_path)
 
-    def test_raises_if_file_missing(self, tmp_path: Path) -> None:
-        with pytest.raises(FileNotFoundError):
-            parse_skill_manifest(tmp_path)
-
-    def test_ignores_comments_in_frontmatter(self, tmp_path: Path) -> None:
-        (tmp_path / "skill.md").write_text(
-            "---\nname: foo\n# comment\nversion: 2.0.0\n---\n"
+    def test_accepts_dict_config(self, tmp_path: Path) -> None:
+        skill = tmp_path / "skill"
+        skill.mkdir()
+        (skill / "config.py").write_text(
+            'config = {"name": "dict-skill", "version": "0.1.0"}\n'
         )
         result = parse_skill_manifest(tmp_path)
-        assert result["name"] == "foo"
+        assert result["name"] == "dict-skill"
+        assert result["version"] == "0.1.0"
+
+    def test_validation_rejects_empty_name(self, tmp_path: Path) -> None:
+        skill = tmp_path / "skill"
+        skill.mkdir()
+        (skill / "config.py").write_text(
+            'from cmdop_skill import SkillConfig\n'
+            'config = SkillConfig(name="", version="1.0.0")\n'
+        )
+        with pytest.raises(Exception):
+            parse_skill_manifest(tmp_path)
+
+    def test_backfills_from_pyproject(self, tmp_path: Path) -> None:
+        skill = tmp_path / "skill"
+        skill.mkdir()
+        (skill / "config.py").write_text(
+            'from cmdop_skill import SkillConfig\n'
+            'config = SkillConfig(name="my-skill", version="1.0.0")\n'
+        )
+        (tmp_path / "pyproject.toml").write_text(
+            '[project]\n'
+            'name = "my-skill"\n'
+            'version = "1.0.0"\n'
+            'description = "From pyproject"\n'
+            'keywords = ["net", "ssl"]\n'
+            'dependencies = ["httpx"]\n'
+            '\n'
+            '[project.urls]\n'
+            'Repository = "https://github.com/example/repo"\n'
+        )
+        result = parse_skill_manifest(tmp_path)
+        assert result["short_description"] == "From pyproject"
+        assert result["tags"] == ["net", "ssl"]
+        assert result["requires"] == ["httpx"]
+        assert result["repository_url"] == "https://github.com/example/repo"
+
+    def test_config_wins_over_pyproject(self, tmp_path: Path) -> None:
+        skill = tmp_path / "skill"
+        skill.mkdir()
+        (skill / "config.py").write_text(
+            'from cmdop_skill import SkillConfig\n'
+            'config = SkillConfig(\n'
+            '    name="my-skill",\n'
+            '    version="2.0.0",\n'
+            '    description="From config",\n'
+            '    tags=["config-tag"],\n'
+            ')\n'
+        )
+        (tmp_path / "pyproject.toml").write_text(
+            '[project]\n'
+            'name = "my-skill"\n'
+            'version = "1.0.0"\n'
+            'description = "From pyproject"\n'
+            'keywords = ["pyproject-tag"]\n'
+        )
+        result = parse_skill_manifest(tmp_path)
         assert result["version"] == "2.0.0"
-        assert "#" not in result
+        assert result["description"] == "From config"
+        assert result["tags"] == ["config-tag"]
 
-    def test_extra_fields_preserved(self, tmp_path: Path) -> None:
-        (tmp_path / "skill.md").write_text(
-            "---\nname: foo\nversion: 1.0.0\nauthor: Alice\n---\n"
+    def test_with_requires_and_tags(self, tmp_path: Path) -> None:
+        skill = tmp_path / "skill"
+        skill.mkdir()
+        (skill / "config.py").write_text(
+            'from cmdop_skill import SkillConfig\n'
+            'config = SkillConfig(\n'
+            '    name="full-skill",\n'
+            '    version="2.0.0",\n'
+            '    description="Full featured",\n'
+            '    requires=["httpx", "pydantic"],\n'
+            '    tags=["network", "ssl"],\n'
+            ')\n'
         )
         result = parse_skill_manifest(tmp_path)
-        assert result["author"] == "Alice"
+        assert result["name"] == "full-skill"
+        assert result["requires"] == ["httpx", "pydantic"]
+        assert result["tags"] == ["network", "ssl"]

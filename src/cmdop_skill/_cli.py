@@ -9,7 +9,6 @@ from pathlib import Path
 
 import typer
 from rich.console import Console
-from rich.prompt import Prompt
 
 app = typer.Typer(
     name="cmdop-skill",
@@ -44,8 +43,11 @@ def _format_size(size: int) -> str:
 
 
 def _resolve_api_key(api_key: str | None, json_mode: bool) -> str:
-    """Resolve API key: flag -> env -> interactive prompt."""
-    key = api_key or os.environ.get("CMDOP_API_KEY")
+    """Resolve API key: flag -> env -> saved config -> interactive prompt."""
+    from cmdop_skill._cli_auth import DASHBOARD_URL, prompt_new_key
+    from cmdop_skill._config import get_api_key, set_api_key
+
+    key = api_key or os.environ.get("CMDOP_API_KEY") or get_api_key()
     if key:
         return key
 
@@ -54,7 +56,7 @@ def _resolve_api_key(api_key: str | None, json_mode: bool) -> str:
             json.dumps(
                 {
                     "ok": False,
-                    "error": "API key required. Use --api-key or set CMDOP_API_KEY env var.",
+                    "error": f"API key required. Use --api-key, set CMDOP_API_KEY, or run: cmdop-skill config set-key. Get key at {DASHBOARD_URL}",
                     "code": "AUTH_REQUIRED",
                 },
                 indent=2,
@@ -62,14 +64,16 @@ def _resolve_api_key(api_key: str | None, json_mode: bool) -> str:
         )
         raise SystemExit(1)
 
-    key = Prompt.ask("[bold]API Key[/bold]", password=True, console=err_console)
-    if not key:
-        err_console.print("[red]API key is required.[/red]")
-        raise SystemExit(1)
+    key = prompt_new_key()
+
+    # Save for future use
+    set_api_key(key)
+    err_console.print("[dim]  Key saved. Use 'cmdop-skill config set-key' to change.[/dim]")
     return key
 
 
 # Register command modules (side-effect imports)
+import cmdop_skill._cli_config as _cli_config  # noqa: E402, F401
 import cmdop_skill._cli_dev as _cli_dev  # noqa: E402, F401
 import cmdop_skill._cli_publish as _cli_publish  # noqa: E402, F401
 

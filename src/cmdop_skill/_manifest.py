@@ -1,4 +1,4 @@
-"""Generate skill.md manifest from Skill metadata and command docstrings."""
+"""Generate skill manifest from Skill metadata and command docstrings."""
 
 from __future__ import annotations
 
@@ -9,21 +9,35 @@ if TYPE_CHECKING:
 
 
 def generate_manifest(skill: Skill) -> str:
-    """Generate a skill.md manifest string from a Skill instance.
+    """Generate ``skill/config.py`` content from a Skill instance.
 
-    The manifest follows the CMDOP skill contract format with YAML frontmatter
-    and markdown body describing commands.
+    Returns a Python source string that, when written to ``skill/config.py``,
+    produces a valid SkillConfig-based manifest.
+    """
+    lines: list[str] = [
+        "from cmdop_skill import SkillConfig",
+        "",
+        "config = SkillConfig(",
+        f'    name="{skill.name}",',
+        f'    version="{skill.version}",',
+    ]
+
+    if skill.description:
+        lines.append(f'    description="{skill.description}",')
+
+    lines.append(")")
+    lines.append("")
+
+    return "\n".join(lines)
+
+
+def generate_readme(skill: Skill) -> str:
+    """Generate ``skill/readme.md`` content from a Skill instance.
+
+    Returns clean markdown (no YAML frontmatter) describing the skill
+    and its commands.
     """
     lines: list[str] = []
-
-    # YAML frontmatter
-    lines.append("---")
-    lines.append(f"name: {skill.name}")
-    lines.append(f"version: {skill.version}")
-    if skill.description:
-        lines.append(f"description: {skill.description}")
-    lines.append("---")
-    lines.append("")
 
     # Title
     lines.append(f"# {skill.name}")

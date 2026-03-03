@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "cmdop-skill"
-version = "2026.3.4"
+version = "2026.3.4.1"
 description = "CMDOP Skill Framework - decorator-based CLI for CMDOP skills"
 readme = "README.md"
 license = "MIT"
@@ -25,7 +25,6 @@ classifiers = [
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Topic :: Software Development :: Libraries :: Python Modules",

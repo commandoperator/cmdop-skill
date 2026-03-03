@@ -13,6 +13,7 @@ from rich.prompt import Confirm
 from rich.table import Table
 
 from cmdop_skill._cli import app, console, err_console, _format_size, _resolve_api_key
+from cmdop_skill._cli_auth import api_call_with_retry
 
 
 @app.command()
@@ -45,27 +46,39 @@ def publish(
 
     key = _resolve_api_key(api_key, json_mode)
 
-    # JSON mode — skip wizard, go straight to publish
-    if json_mode:
-        try:
-            result = asyncio.run(
-                publish_skill(path=resolved_path, api_key=key, base_url=base_url, mode=mode)
+    def _do_publish(k: str) -> dict:
+        if not json_mode:
+            with console.status("[bold green]Publishing...", spinner="dots"):
+                return asyncio.run(
+                    publish_skill(path=resolved_path, api_key=k, base_url=base_url, mode=mode)
+                )
+        else:
+            return asyncio.run(
+                publish_skill(path=resolved_path, api_key=k, base_url=base_url, mode=mode)
             )
-        except Exception as exc:
-            result = {"ok": False, "error": str(exc), "code": "PUBLISH_ERROR"}
+
+    # JSON mode — skip wizard
+    if json_mode:
+        result = api_call_with_retry(_do_publish, key, json_mode)
+        if result.get("ok"):
+            from cmdop_skill.api.config import DASHBOARD_SKILLS_URL
+            result["dashboard_url"] = DASHBOARD_SKILLS_URL
         print(json.dumps(result, indent=2, default=str))
         raise SystemExit(0 if result.get("ok") else 1)
 
     # Interactive wizard
-    from cmdop_skill.api.config import BASE_URLS
-
-    target_label = f"{mode} ({base_url or BASE_URLS.get(mode, mode)})"
+    from importlib.metadata import version as pkg_version
+    try:
+        sdk_ver = pkg_version("cmdop-skill")
+    except Exception:
+        sdk_ver = "?"
 
     console.print()
     console.print(Panel.fit(
         f"[bold]Name:[/bold]        {name}\n"
         f"[bold]Version:[/bold]     {version}\n"
-        f"[bold]Description:[/bold] {description or '[dim]—[/dim]'}",
+        f"[bold]Description:[/bold] {description or '[dim]—[/dim]'}\n"
+        f"[dim]cmdop-skill {sdk_ver}[/dim]",
         title="[bold cyan]Skill Publish[/bold cyan]",
     ))
 
@@ -80,27 +93,25 @@ def publish(
         table.add_row(f["path"], _format_size(f["size"]), ftype)
 
     console.print(table)
-    console.print(f"\n  [bold]Target:[/bold] {target_label}\n")
+    console.print()
 
     if not Confirm.ask("  Publish?", default=False, console=console):
         console.print("[dim]Cancelled.[/dim]")
         raise SystemExit(0)
 
-    # Publish with spinner
-    with console.status("[bold green]Publishing...", spinner="dots"):
-        try:
-            result = asyncio.run(
-                publish_skill(path=resolved_path, api_key=key, base_url=base_url, mode=mode)
-            )
-        except Exception as exc:
-            result = {"ok": False, "error": str(exc), "code": "PUBLISH_ERROR"}
+    result = api_call_with_retry(_do_publish, key, json_mode)
 
     if result.get("ok"):
+        from cmdop_skill.api.config import DASHBOARD_SKILLS_URL
+
         console.print(
-            f"  [bold green]✓[/bold green] Published {name} v{version} ({len(files)} files)"
+            f"  [bold green]\u2713[/bold green] Published {name} v{version} ({len(files)} files)"
+        )
+        console.print(
+            f"  [dim]Dashboard:[/dim] [link={DASHBOARD_SKILLS_URL}]{DASHBOARD_SKILLS_URL}[/link]"
         )
     else:
-        err_console.print(f"  [bold red]✗[/bold red] {result.get('error', 'Unknown error')}")
+        err_console.print(f"  [bold red]\u2717[/bold red] {result.get('error', 'Unknown error')}")
         raise SystemExit(1)
 
 
@@ -116,23 +127,18 @@ def list_skills(
 
     key = _resolve_api_key(api_key, json_mode)
 
-    api_kwargs: dict[str, object] = {"api_key": key, "mode": mode}
-    if base_url:
-        api_kwargs["base_url"] = base_url
+    def _fetch(k: str) -> object:
+        api_kwargs: dict[str, object] = {"api_key": k, "mode": mode}
+        if base_url:
+            api_kwargs["base_url"] = base_url
 
-    async def _fetch() -> object:
-        async with CMDOPSkillsAPI(**api_kwargs) as api:
-            return await api.skills.my()
+        async def _do() -> object:
+            async with CMDOPSkillsAPI(**api_kwargs) as api:
+                return await api.skills.my()
 
-    try:
-        paginated = asyncio.run(_fetch())
-    except Exception as exc:
-        if json_mode:
-            print(json.dumps({"ok": False, "error": str(exc)}, indent=2))
-        else:
-            err_console.print(f"[red]Error:[/red] {exc}")
-        raise SystemExit(1)
+        return asyncio.run(_do())
 
+    paginated = api_call_with_retry(_fetch, key, json_mode)
     skills = paginated.results  # type: ignore[union-attr]
 
     if json_mode:
@@ -157,7 +163,7 @@ def list_skills(
     table.add_column("Stars", justify="right")
 
     for s in skills:
-        status_str = str(s.status) if s.status else "—"
+        status_str = str(s.status) if s.status else "\u2014"
         table.add_row(
             s.name,
             status_str,

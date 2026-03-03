@@ -108,7 +108,7 @@ class SkillsService:
             short_description=short_description,
             description=description,
             category=category,
-            tags=tags or [],
+            tags=tags if tags else None,
             visibility=visibility,
             repository_url=repository_url,
         )
@@ -152,7 +152,7 @@ class SkillsService:
         slug: str,
         version: str,
         files: list[dict],
-        changelog: str = "",
+        changelog: str | None = None,
     ) -> SkillVersion:
         """Publish a new version of a skill."""
         from cmdop_skill.api.generated.skills.skills__api__skills.models import (
@@ -162,7 +162,7 @@ class SkillsService:
         data = SkillVersionCreateRequest(
             version=version,
             files=files,
-            changelog=changelog,
+            changelog=changelog if changelog else None,
         )
         return await self._client.skills_versions_create_create(slug=slug, data=data)
 
