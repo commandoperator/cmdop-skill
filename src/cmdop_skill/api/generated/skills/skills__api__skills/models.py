@@ -6,7 +6,7 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from ..enums import PatchedSkillUpdateRequestStatus, PatchedSkillUpdateRequestVisibility
+from ..enums import PatchedSkillUpdateRequestCategory, PatchedSkillUpdateRequestStatus, PatchedSkillUpdateRequestVisibility
 
 
 class SkillCategory(BaseModel):
@@ -50,7 +50,7 @@ class SkillTag(BaseModel):
     )
 
     id: str = ...
-    name: str = Field(max_length=50)
+    name: str = Field(max_length=100)
     slug: Any = Field(pattern='^[-a-zA-Z0-9_]+$')
 
 
@@ -152,7 +152,10 @@ class SkillCreateRequest(BaseModel):
     max_length=300,
 )
     description: str | None = Field(None, description='Full description with markdown s...')
-    category: str | None = None
+    category: PatchedSkillUpdateRequestCategory | None = Field(
+    None,
+    description='Category slug. Must be an existi...',
+)
     tags: list[str] | None = Field(None, description='Tag names (strings). Tags are cr...')
     visibility: PatchedSkillUpdateRequestVisibility | None = Field(
     None,
@@ -188,7 +191,10 @@ class SkillCreate(BaseModel):
     max_length=300,
 )
     description: str | None = Field(None, description='Full description with markdown s...')
-    category: str | None = None
+    category: PatchedSkillUpdateRequestCategory | None = Field(
+    None,
+    description='Category slug. Must be an existi...',
+)
     tags: list[str] | None = Field(None, description='Tag names (strings). Tags are cr...')
     visibility: PatchedSkillUpdateRequestVisibility | None = Field(
     None,
@@ -353,7 +359,10 @@ class SkillUpdateRequest(BaseModel):
     max_length=300,
 )
     description: str | None = Field(None, description='Full description with markdown s...')
-    category: str | None = None
+    category: PatchedSkillUpdateRequestCategory | None = Field(
+    None,
+    description='Category slug. Must be an existi...',
+)
     tags: list[str] | None = Field(None, description='Tag names (strings). Tags are cr...')
     visibility: PatchedSkillUpdateRequestVisibility | None = Field(
     None,
@@ -393,7 +402,10 @@ class SkillUpdate(BaseModel):
     max_length=300,
 )
     description: str | None = Field(None, description='Full description with markdown s...')
-    category: str | None = None
+    category: PatchedSkillUpdateRequestCategory | None = Field(
+    None,
+    description='Category slug. Must be an existi...',
+)
     tags: list[str] | None = Field(None, description='Tag names (strings). Tags are cr...')
     visibility: PatchedSkillUpdateRequestVisibility | None = Field(
     None,
@@ -433,7 +445,10 @@ class PatchedSkillUpdateRequest(BaseModel):
     max_length=300,
 )
     description: str | None = Field(None, description='Full description with markdown s...')
-    category: str | None = None
+    category: PatchedSkillUpdateRequestCategory | None = Field(
+    None,
+    description='Category slug. Must be an existi...',
+)
     tags: list[str] | None = Field(None, description='Tag names (strings). Tags are cr...')
     visibility: PatchedSkillUpdateRequestVisibility | None = Field(
     None,

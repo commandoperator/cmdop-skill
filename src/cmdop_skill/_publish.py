@@ -132,7 +132,7 @@ def _load_skill_config(config_path: Path) -> dict[str, Any]:
 
     # Accept both SkillConfig (pydantic) and plain dict
     if hasattr(config, "model_dump"):
-        return config.model_dump()
+        return config.model_dump(mode="json")
     if isinstance(config, dict):
         return config
     raise ValueError(
@@ -258,7 +258,7 @@ async def publish_skill(
             if m.get("category"):
                 create_kwargs["category"] = m["category"]
             if m.get("tags"):
-                create_kwargs["tags"] = m["tags"]
+                create_kwargs["tags"] = [t[:50] for t in m["tags"]]
             if m.get("visibility"):
                 create_kwargs["visibility"] = m["visibility"]
             if m.get("repository_url"):

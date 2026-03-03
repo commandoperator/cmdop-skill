@@ -31,6 +31,7 @@ from typing import Any
 
 from .client import APIClient
 from .enums import (
+    PatchedSkillUpdateRequestCategory,
     PatchedSkillUpdateRequestStatus,
     PatchedSkillUpdateRequestVisibility,
 )
@@ -209,6 +210,7 @@ class API:
 __all__ = [
     "API",
     "APIClient",
+    "PatchedSkillUpdateRequestCategory",
     "PatchedSkillUpdateRequestStatus",
     "PatchedSkillUpdateRequestVisibility",
 ]

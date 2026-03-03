@@ -1222,18 +1222,42 @@
                         "description": "Full description with markdown support"
                     },
                     "category": {
+                        "enum": [
+                            "development",
+                            "code-review",
+                            "testing",
+                            "devops",
+                            "cloud",
+                            "databases",
+                            "git",
+                            "web",
+                            "apis",
+                            "data",
+                            "ai",
+                            "writing",
+                            "communication",
+                            "security",
+                            "productivity",
+                            "finance",
+                            "design",
+                            "mobile",
+                            "research",
+                            "other",
+                            null
+                        ],
                         "type": [
                             "string",
                             "null"
                         ],
-                        "format": "uuid"
+                        "x-spec-enum-id": "8112819112f3fa97",
+                        "description": "Category slug. Must be an existing category.\n\n* `development` - Development\n* `code-review` - Code Review\n* `testing` - Testing & QA\n* `devops` - DevOps & CI/CD\n* `cloud` - Cloud & Infrastructure\n* `databases` - Databases\n* `git` - Git & Version Control\n* `web` - Web & Browser\n* `apis` - APIs & Integrations\n* `data` - Data & Analytics\n* `ai` - AI & Agents\n* `writing` - Writing & Docs\n* `communication` - Communication\n* `security` - Security\n* `productivity` - Productivity\n* `finance` - Finance & Business\n* `design` - Design & UI\n* `mobile` - Mobile\n* `research` - Research\n* `other` - Other"
                     },
                     "tags": {
                         "type": "array",
                         "items": {
                             "type": "string",
                             "minLength": 1,
-                            "maxLength": 50
+                            "maxLength": 100
                         },
                         "description": "Tag names (strings). Tags are created automatically."
                     },
@@ -1344,17 +1368,41 @@
                         "description": "Full description with markdown support"
                     },
                     "category": {
+                        "enum": [
+                            "development",
+                            "code-review",
+                            "testing",
+                            "devops",
+                            "cloud",
+                            "databases",
+                            "git",
+                            "web",
+                            "apis",
+                            "data",
+                            "ai",
+                            "writing",
+                            "communication",
+                            "security",
+                            "productivity",
+                            "finance",
+                            "design",
+                            "mobile",
+                            "research",
+                            "other",
+                            null
+                        ],
                         "type": [
                             "string",
                             "null"
                         ],
-                        "format": "uuid"
+                        "x-spec-enum-id": "8112819112f3fa97",
+                        "description": "Category slug. Must be an existing category.\n\n* `development` - Development\n* `code-review` - Code Review\n* `testing` - Testing & QA\n* `devops` - DevOps & CI/CD\n* `cloud` - Cloud & Infrastructure\n* `databases` - Databases\n* `git` - Git & Version Control\n* `web` - Web & Browser\n* `apis` - APIs & Integrations\n* `data` - Data & Analytics\n* `ai` - AI & Agents\n* `writing` - Writing & Docs\n* `communication` - Communication\n* `security` - Security\n* `productivity` - Productivity\n* `finance` - Finance & Business\n* `design` - Design & UI\n* `mobile` - Mobile\n* `research` - Research\n* `other` - Other"
                     },
                     "tags": {
                         "type": "array",
                         "items": {
                             "type": "string",
-                            "maxLength": 50
+                            "maxLength": 100
                         },
                         "description": "Tag names (strings). Tags are created automatically."
                     },
@@ -1412,18 +1460,42 @@
                         "description": "Full description with markdown support"
                     },
                     "category": {
+                        "enum": [
+                            "development",
+                            "code-review",
+                            "testing",
+                            "devops",
+                            "cloud",
+                            "databases",
+                            "git",
+                            "web",
+                            "apis",
+                            "data",
+                            "ai",
+                            "writing",
+                            "communication",
+                            "security",
+                            "productivity",
+                            "finance",
+                            "design",
+                            "mobile",
+                            "research",
+                            "other",
+                            null
+                        ],
                         "type": [
                             "string",
                             "null"
                         ],
-                        "format": "uuid"
+                        "x-spec-enum-id": "8112819112f3fa97",
+                        "description": "Category slug. Must be an existing category.\n\n* `development` - Development\n* `code-review` - Code Review\n* `testing` - Testing & QA\n* `devops` - DevOps & CI/CD\n* `cloud` - Cloud & Infrastructure\n* `databases` - Databases\n* `git` - Git & Version Control\n* `web` - Web & Browser\n* `apis` - APIs & Integrations\n* `data` - Data & Analytics\n* `ai` - AI & Agents\n* `writing` - Writing & Docs\n* `communication` - Communication\n* `security` - Security\n* `productivity` - Productivity\n* `finance` - Finance & Business\n* `design` - Design & UI\n* `mobile` - Mobile\n* `research` - Research\n* `other` - Other"
                     },
                     "tags": {
                         "type": "array",
                         "items": {
                             "type": "string",
                             "minLength": 1,
-                            "maxLength": 50
+                            "maxLength": 100
                         },
                         "description": "Tag names (strings). Tags are created automatically."
                     },
@@ -2081,7 +2153,7 @@
                     "name": {
                         "type": "string",
                         "title": "Tag name",
-                        "maxLength": 50
+                        "maxLength": 100
                     },
                     "slug": {
                         "type": "string",
@@ -2104,7 +2176,7 @@
                         "type": "string",
                         "minLength": 1,
                         "title": "Tag name",
-                        "maxLength": 50
+                        "maxLength": 100
                     }
                 },
                 "required": [
@@ -2130,17 +2202,41 @@
                         "description": "Full description with markdown support"
                     },
                     "category": {
+                        "enum": [
+                            "development",
+                            "code-review",
+                            "testing",
+                            "devops",
+                            "cloud",
+                            "databases",
+                            "git",
+                            "web",
+                            "apis",
+                            "data",
+                            "ai",
+                            "writing",
+                            "communication",
+                            "security",
+                            "productivity",
+                            "finance",
+                            "design",
+                            "mobile",
+                            "research",
+                            "other",
+                            null
+                        ],
                         "type": [
                             "string",
                             "null"
                         ],
-                        "format": "uuid"
+                        "x-spec-enum-id": "8112819112f3fa97",
+                        "description": "Category slug. Must be an existing category.\n\n* `development` - Development\n* `code-review` - Code Review\n* `testing` - Testing & QA\n* `devops` - DevOps & CI/CD\n* `cloud` - Cloud & Infrastructure\n* `databases` - Databases\n* `git` - Git & Version Control\n* `web` - Web & Browser\n* `apis` - APIs & Integrations\n* `data` - Data & Analytics\n* `ai` - AI & Agents\n* `writing` - Writing & Docs\n* `communication` - Communication\n* `security` - Security\n* `productivity` - Productivity\n* `finance` - Finance & Business\n* `design` - Design & UI\n* `mobile` - Mobile\n* `research` - Research\n* `other` - Other"
                     },
                     "tags": {
                         "type": "array",
                         "items": {
                             "type": "string",
-                            "maxLength": 50
+                            "maxLength": 100
                         },
                         "description": "Tag names (strings). Tags are created automatically."
                     },
@@ -2208,18 +2304,42 @@
                         "description": "Full description with markdown support"
                     },
                     "category": {
+                        "enum": [
+                            "development",
+                            "code-review",
+                            "testing",
+                            "devops",
+                            "cloud",
+                            "databases",
+                            "git",
+                            "web",
+                            "apis",
+                            "data",
+                            "ai",
+                            "writing",
+                            "communication",
+                            "security",
+                            "productivity",
+                            "finance",
+                            "design",
+                            "mobile",
+                            "research",
+                            "other",
+                            null
+                        ],
                         "type": [
                             "string",
                             "null"
                         ],
-                        "format": "uuid"
+                        "x-spec-enum-id": "8112819112f3fa97",
+                        "description": "Category slug. Must be an existing category.\n\n* `development` - Development\n* `code-review` - Code Review\n* `testing` - Testing & QA\n* `devops` - DevOps & CI/CD\n* `cloud` - Cloud & Infrastructure\n* `databases` - Databases\n* `git` - Git & Version Control\n* `web` - Web & Browser\n* `apis` - APIs & Integrations\n* `data` - Data & Analytics\n* `ai` - AI & Agents\n* `writing` - Writing & Docs\n* `communication` - Communication\n* `security` - Security\n* `productivity` - Productivity\n* `finance` - Finance & Business\n* `design` - Design & UI\n* `mobile` - Mobile\n* `research` - Research\n* `other` - Other"
                     },
                     "tags": {
                         "type": "array",
                         "items": {
                             "type": "string",
                             "minLength": 1,
-                            "maxLength": 50
+                            "maxLength": 100
                         },
                         "description": "Tag names (strings). Tags are created automatically."
                     },

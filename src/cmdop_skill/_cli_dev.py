@@ -327,7 +327,10 @@ def release(
     from rich.prompt import Confirm
 
     from cmdop_skill._publish import collect_skill_files, parse_skill_manifest, publish_skill
-    from cmdop_skill._pypi import build as pypi_build, clean, dist_files, upload
+    from cmdop_skill._pypi import (
+        build as pypi_build, clean, dist_files, upload,
+        inject_readme_badge, patch_pyproject_urls,
+    )
 
     resolved_path = Path(path).resolve()
     pyproject = resolved_path / "pyproject.toml"
@@ -366,6 +369,10 @@ def release(
 
     target = "TestPyPI" if test_pypi else "PyPI"
     do_publish = not no_publish and not test_pypi
+
+    # Inject CMDOP badge into README and patch pyproject.toml URLs
+    inject_readme_badge(resolved_path, name)
+    patch_pyproject_urls(resolved_path, name)
 
     # JSON mode — no wizard
     if json_mode:

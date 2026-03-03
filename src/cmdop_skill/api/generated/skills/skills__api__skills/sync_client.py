@@ -143,9 +143,12 @@ class SyncSkillsSkillsAPI:
         if 'description' in _raw_data and _raw_data['description'] is not None:
             _form_data['description'] = _raw_data['description']
         if 'category' in _raw_data and _raw_data['category'] is not None:
-            _form_data['category'] = _raw_data['category']
+            _val = _raw_data['category']
+            _form_data['category'] = _val.value if hasattr(_val, 'value') else _val
         if 'tags' in _raw_data and _raw_data['tags'] is not None:
-            _form_data['tags'] = _json.dumps(_raw_data['tags'])
+            _form_data.setdefault('tags', [])
+            for _item in _raw_data['tags']:
+                _form_data['tags'].append(str(_item))
         if 'visibility' in _raw_data and _raw_data['visibility'] is not None:
             _val = _raw_data['visibility']
             _form_data['visibility'] = _val.value if hasattr(_val, 'value') else _val
@@ -211,9 +214,12 @@ class SyncSkillsSkillsAPI:
         if 'description' in _raw_data and _raw_data['description'] is not None:
             _form_data['description'] = _raw_data['description']
         if 'category' in _raw_data and _raw_data['category'] is not None:
-            _form_data['category'] = _raw_data['category']
+            _val = _raw_data['category']
+            _form_data['category'] = _val.value if hasattr(_val, 'value') else _val
         if 'tags' in _raw_data and _raw_data['tags'] is not None:
-            _form_data['tags'] = _json.dumps(_raw_data['tags'])
+            _form_data.setdefault('tags', [])
+            for _item in _raw_data['tags']:
+                _form_data['tags'].append(str(_item))
         if 'visibility' in _raw_data and _raw_data['visibility'] is not None:
             _val = _raw_data['visibility']
             _form_data['visibility'] = _val.value if hasattr(_val, 'value') else _val

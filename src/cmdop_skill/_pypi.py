@@ -101,6 +101,89 @@ def dist_files(path: Path) -> list[tuple[str, int]]:
     return [(f.name, f.stat().st_size) for f in sorted(dist.glob("*"))]
 
 
+CMDOP_SKILLS_URL = "https://cmdop.com/skills"
+
+CMDOP_README_BADGE = """\
+> **[CMDOP Skill]({url})** — install and use via [CMDOP agent](https://cmdop.com):
+> ```
+> cmdop-skill install {name}
+> ```
+
+"""
+
+
+def inject_readme_badge(path: Path, name: str) -> bool:
+    """Add CMDOP badge block to top of README.md (after the title).
+
+    Returns True if modified, False if already present or no README.
+    """
+    readme = path / "README.md"
+    if not readme.is_file():
+        return False
+
+    text = readme.read_text(encoding="utf-8")
+    if "CMDOP Skill" in text:
+        return False  # already has badge
+
+    url = f"{CMDOP_SKILLS_URL}/{name}/"
+    badge = CMDOP_README_BADGE.format(url=url, name=name)
+
+    lines = text.split("\n", 2)
+    # Insert after first heading line (# title)
+    if lines and lines[0].startswith("#"):
+        # title + blank line + badge + rest
+        parts = [lines[0], "", badge.rstrip()]
+        if len(lines) > 1:
+            rest = "\n".join(lines[1:]).lstrip("\n")
+            parts.append(rest)
+        text = "\n".join(parts)
+    else:
+        text = badge + text
+
+    readme.write_text(text, encoding="utf-8")
+    return True
+
+
+def patch_pyproject_urls(path: Path, name: str) -> bool:
+    """Add/update Homepage URL in pyproject.toml to point to CMDOP skills page.
+
+    Returns True if modified.
+    """
+    pyproject = path / "pyproject.toml"
+    if not pyproject.is_file():
+        return False
+
+    import re
+
+    text = pyproject.read_text(encoding="utf-8")
+    skill_url = f"{CMDOP_SKILLS_URL}/{name}/"
+    changed = False
+
+    # Update or add Homepage
+    if re.search(r'^Homepage\s*=', text, re.MULTILINE):
+        new_text = re.sub(
+            r'^(Homepage\s*=\s*)["\'].*?["\']',
+            f'\\1"{skill_url}"',
+            text,
+            count=1,
+            flags=re.MULTILINE,
+        )
+        if new_text != text:
+            text = new_text
+            changed = True
+    elif "[project.urls]" in text:
+        text = text.replace(
+            "[project.urls]",
+            f'[project.urls]\nHomepage = "{skill_url}"',
+            1,
+        )
+        changed = True
+
+    if changed:
+        pyproject.write_text(text, encoding="utf-8")
+    return changed
+
+
 def check_pypi_name(name: str) -> dict[str, object]:
     """Check if a package name is taken on PyPI.
 

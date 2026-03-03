@@ -18,6 +18,10 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
+from cmdop_skill.api.generated.skills.enums import (
+    PatchedSkillUpdateRequestCategory as SkillCategory,
+)
+
 
 class SkillConfig(BaseModel):
     """Typed skill manifest — maps 1:1 to the marketplace API.
@@ -27,7 +31,7 @@ class SkillConfig(BaseModel):
         version: SemVer or CalVer string (1-20 chars).
         short_description: Brief summary for skill cards (max 300 chars).
         description: Full description with markdown support.
-        category: Category slug on the marketplace.
+        category: Category from ``SkillCategory`` enum or slug string.
         tags: Discovery tags for the marketplace.
         visibility: ``"public"`` or ``"private"``.
         repository_url: Link to source code repository.
@@ -42,7 +46,7 @@ class SkillConfig(BaseModel):
     # ── skill metadata (API: skills.create / skills.update) ──
     short_description: str = Field(default="", max_length=300)
     description: str = ""
-    category: str | None = None
+    category: SkillCategory | str | None = None
     tags: list[str] = []
     visibility: Literal["public", "private"] | None = None
     repository_url: str | None = Field(default=None, max_length=200)

@@ -7,6 +7,54 @@ class StrEnum(str, Enum):
     """String Enum for Python 3.10+ compatibility."""
 
 
+class PatchedSkillUpdateRequestCategory(StrEnum):
+    """
+    Category slug. Must be an existing category.
+    * `development` - Development
+    * `code-review` - Code Review
+    * `testing` - Testing & QA
+    * `devops` - DevOps & CI/CD
+    * `cloud` - Cloud & Infrastructure
+    * `databases` - Databases
+    * `git` - Git & Version Control
+    * `web` - Web & Browser
+    * `apis` - APIs & Integrations
+    * `data` - Data & Analytics
+    * `ai` - AI & Agents
+    * `writing` - Writing & Docs
+    * `communication` - Communication
+    * `security` - Security
+    * `productivity` - Productivity
+    * `finance` - Finance & Business
+    * `design` - Design & UI
+    * `mobile` - Mobile
+    * `research` - Research
+    * `other` - Other
+    """
+
+    DEVELOPMENT = "development"
+    CODE_REVIEW = "code-review"
+    TESTING = "testing"
+    DEVOPS = "devops"
+    CLOUD = "cloud"
+    DATABASES = "databases"
+    GIT = "git"
+    WEB = "web"
+    APIS = "apis"
+    DATA = "data"
+    AI = "ai"
+    WRITING = "writing"
+    COMMUNICATION = "communication"
+    SECURITY = "security"
+    PRODUCTIVITY = "productivity"
+    FINANCE = "finance"
+    DESIGN = "design"
+    MOBILE = "mobile"
+    RESEARCH = "research"
+    OTHER = "other"
+
+
+
 class PatchedSkillUpdateRequestVisibility(StrEnum):
     """
     * `public` - Public
