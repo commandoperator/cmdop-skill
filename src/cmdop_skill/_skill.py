@@ -12,6 +12,7 @@ from typing import Any, Callable, TypeVar
 
 from cmdop_skill._output import format_error, wrap_result
 from cmdop_skill._parser import CommandInfo, build_subparser, extract_params
+from cmdop_skill._resolve import resolve_project_meta
 from cmdop_skill._types import LifecycleHook
 
 F = TypeVar("F", bound=Callable[..., Any])
@@ -22,7 +23,7 @@ class Skill:
 
     Usage::
 
-        skill = Skill(name="my-skill", description="Does things", version="1.0.0")
+        skill = Skill()  # name, version, description from pyproject.toml
 
         @skill.command
         async def hello(name: str = Arg(help="Who to greet")) -> dict:
@@ -34,12 +35,18 @@ class Skill:
 
     def __init__(
         self,
-        name: str,
+        name: str = "",
         description: str = "",
-        version: str = "0.0.0",
+        version: str = "",
         *,
         auto_sys_path: bool = True,
     ) -> None:
+        if not name or not version:
+            meta = resolve_project_meta()
+            name = name or meta.get("name", "")
+            version = version or meta.get("version", "0.0.0")
+            description = description or meta.get("description", "")
+
         self.name = name
         self.description = description
         self.version = version
@@ -47,8 +54,25 @@ class Skill:
         self._setup_hooks: list[LifecycleHook] = []
         self._teardown_hooks: list[LifecycleHook] = []
 
+        # Built-in check command (cannot be overridden by user commands)
+        self._commands["check"] = CommandInfo(
+            name="check",
+            handler=self._builtin_check,
+            help="Verify skill is installed and ready to run",
+            params=[],
+        )
+
         if auto_sys_path:
             self._setup_sys_path()
+
+    def _builtin_check(self) -> dict:
+        """Verify skill is installed and ready to run."""
+        return {
+            "ok": True,
+            "name": self.name,
+            "version": self.version,
+            "commands": [k for k in self._commands if k != "check"],
+        }
 
     # -- Decorators --
 

@@ -11,6 +11,7 @@ from .models import (
     SkillDetail,
     SkillInstall,
     SkillListRequest,
+    SkillPublishRequest,
     SkillStar,
     SkillTag,
     SkillUpdate,
@@ -18,7 +19,6 @@ from .models import (
     SkillUploadCoverRequestRequest,
     SkillUploadCoverResponse,
     SkillVersion,
-    SkillVersionCreateRequest,
 )
 from .sync_client import SyncSkillsSkillsAPI
 
@@ -34,6 +34,7 @@ __all__ = [
     "SkillDetail",
     "SkillInstall",
     "SkillListRequest",
+    "SkillPublishRequest",
     "SkillStar",
     "SkillTag",
     "SkillUpdate",
@@ -41,5 +42,4 @@ __all__ = [
     "SkillUploadCoverRequestRequest",
     "SkillUploadCoverResponse",
     "SkillVersion",
-    "SkillVersionCreateRequest",
 ]

@@ -12,6 +12,7 @@ from .models import (
     SkillDetail,
     SkillInstall,
     SkillListRequest,
+    SkillPublishRequest,
     SkillStar,
     SkillTag,
     SkillUpdate,
@@ -19,7 +20,6 @@ from .models import (
     SkillUploadCoverRequestRequest,
     SkillUploadCoverResponse,
     SkillVersion,
-    SkillVersionCreateRequest,
 )
 
 
@@ -83,6 +83,7 @@ class SkillsSkillsAPI:
     async def skills_list(
         self,
         category: str | None = None,
+        lang: str | None = None,
         ordering: str | None = None,
         page: int | None = None,
         page_size: int | None = None,
@@ -98,6 +99,7 @@ class SkillsSkillsAPI:
         _params = {
             k: v for k, v in {
                 "category": category,
+                "lang": lang,
                 "ordering": ordering,
                 "page": page,
                 "page_size": page_size,
@@ -124,37 +126,10 @@ class SkillsSkillsAPI:
 
         ViewSet for Skill CRUD and marketplace operations. Public endpoints:
         list, retrieve Authenticated: create, update, delete, star, install, my,
-        versions Admin: verify, suspend
+        versions, publish Admin: verify, suspend
         """
         url = "/api/skills/skills/"
-        # Build multipart form data
-        _files = {}
-        _form_data = {}
-        _raw_data = data.model_dump(mode="json", exclude_unset=True, exclude_none=True)
-        if 'icon' in _raw_data and _raw_data['icon'] is not None:
-            _files['icon'] = _raw_data['icon']
-        if 'cover' in _raw_data and _raw_data['cover'] is not None:
-            _files['cover'] = _raw_data['cover']
-        import json as _json
-        if 'name' in _raw_data and _raw_data['name'] is not None:
-            _form_data['name'] = _raw_data['name']
-        if 'short_description' in _raw_data and _raw_data['short_description'] is not None:
-            _form_data['short_description'] = _raw_data['short_description']
-        if 'description' in _raw_data and _raw_data['description'] is not None:
-            _form_data['description'] = _raw_data['description']
-        if 'category' in _raw_data and _raw_data['category'] is not None:
-            _val = _raw_data['category']
-            _form_data['category'] = _val.value if hasattr(_val, 'value') else _val
-        if 'tags' in _raw_data and _raw_data['tags'] is not None:
-            _form_data.setdefault('tags', [])
-            for _item in _raw_data['tags']:
-                _form_data['tags'].append(str(_item))
-        if 'visibility' in _raw_data and _raw_data['visibility'] is not None:
-            _val = _raw_data['visibility']
-            _form_data['visibility'] = _val.value if hasattr(_val, 'value') else _val
-        if 'repository_url' in _raw_data and _raw_data['repository_url'] is not None:
-            _form_data['repository_url'] = _raw_data['repository_url']
-        response = await self._client.post(url, files=_files if _files else None, data=_form_data if _form_data else None)
+        response = await self._client.post(url, json=data.model_dump(mode="json", exclude_unset=True, exclude_none=True))
         if not response.is_success:
             try:
                 error_body = response.json()
@@ -167,16 +142,21 @@ class SkillsSkillsAPI:
         return SkillCreate.model_validate(response.json())
 
 
-    async def skills_retrieve(self, slug: str) -> SkillDetail:
+    async def skills_retrieve(self, slug: str, lang: str | None = None) -> SkillDetail:
         """
         Get skill details
 
         ViewSet for Skill CRUD and marketplace operations. Public endpoints:
         list, retrieve Authenticated: create, update, delete, star, install, my,
-        versions Admin: verify, suspend
+        versions, publish Admin: verify, suspend
         """
         url = f"/api/skills/skills/{slug}/"
-        response = await self._client.get(url)
+        _params = {
+            k: v for k, v in {
+                "lang": lang,
+            }.items() if v is not None
+        }
+        response = await self._client.get(url, params=_params)
         if not response.is_success:
             try:
                 error_body = response.json()
@@ -195,7 +175,7 @@ class SkillsSkillsAPI:
 
         ViewSet for Skill CRUD and marketplace operations. Public endpoints:
         list, retrieve Authenticated: create, update, delete, star, install, my,
-        versions Admin: verify, suspend
+        versions, publish Admin: verify, suspend
         """
         url = f"/api/skills/skills/{slug}/"
         # Build multipart form data
@@ -206,20 +186,11 @@ class SkillsSkillsAPI:
             _files['icon'] = _raw_data['icon']
         if 'cover' in _raw_data and _raw_data['cover'] is not None:
             _files['cover'] = _raw_data['cover']
-        import json as _json
         if 'name' in _raw_data and _raw_data['name'] is not None:
             _form_data['name'] = _raw_data['name']
-        if 'short_description' in _raw_data and _raw_data['short_description'] is not None:
-            _form_data['short_description'] = _raw_data['short_description']
-        if 'description' in _raw_data and _raw_data['description'] is not None:
-            _form_data['description'] = _raw_data['description']
         if 'category' in _raw_data and _raw_data['category'] is not None:
             _val = _raw_data['category']
             _form_data['category'] = _val.value if hasattr(_val, 'value') else _val
-        if 'tags' in _raw_data and _raw_data['tags'] is not None:
-            _form_data.setdefault('tags', [])
-            for _item in _raw_data['tags']:
-                _form_data['tags'].append(str(_item))
         if 'visibility' in _raw_data and _raw_data['visibility'] is not None:
             _val = _raw_data['visibility']
             _form_data['visibility'] = _val.value if hasattr(_val, 'value') else _val
@@ -251,7 +222,7 @@ class SkillsSkillsAPI:
 
         ViewSet for Skill CRUD and marketplace operations. Public endpoints:
         list, retrieve Authenticated: create, update, delete, star, install, my,
-        versions Admin: verify, suspend
+        versions, publish Admin: verify, suspend
         """
         url = f"/api/skills/skills/{slug}/"
         _json = data.model_dump(mode="json", exclude_unset=True, exclude_none=True) if data else None
@@ -274,7 +245,7 @@ class SkillsSkillsAPI:
 
         ViewSet for Skill CRUD and marketplace operations. Public endpoints:
         list, retrieve Authenticated: create, update, delete, star, install, my,
-        versions Admin: verify, suspend
+        versions, publish Admin: verify, suspend
         """
         url = f"/api/skills/skills/{slug}/"
         response = await self._client.delete(url)
@@ -294,7 +265,7 @@ class SkillsSkillsAPI:
         """
         Install a skill
 
-        Record an install and return all skill files with package dependencies.
+        Record an install and return install command + README.
         """
         url = f"/api/skills/skills/{slug}/install/"
         response = await self._client.post(url)
@@ -308,6 +279,30 @@ class SkillsSkillsAPI:
                 msg, request=response.request, response=response
             )
         return SkillInstall.model_validate(response.json())
+
+
+    async def skills_publish_create(
+        self,
+        slug: str,
+        data: SkillPublishRequest,
+    ) -> SkillVersion:
+        """
+        Publish a new skill version
+
+        Upload raw manifest — LLM parses it, creates version, updates metadata.
+        """
+        url = f"/api/skills/skills/{slug}/publish/"
+        response = await self._client.post(url, json=data.model_dump(mode="json", exclude_unset=True, exclude_none=True))
+        if not response.is_success:
+            try:
+                error_body = response.json()
+            except Exception:
+                error_body = response.text
+            msg = f"{response.status_code}: {error_body}"
+            raise httpx.HTTPStatusError(
+                msg, request=response.request, response=response
+            )
+        return SkillVersion.model_validate(response.json())
 
 
     async def skills_reviews_list(
@@ -382,8 +377,6 @@ class SkillsSkillsAPI:
             _files['cover'] = _raw_data['cover']
         if 'name' in _raw_data and _raw_data['name'] is not None:
             _form_data['name'] = _raw_data['name']
-        if 'short_description' in _raw_data and _raw_data['short_description'] is not None:
-            _form_data['short_description'] = _raw_data['short_description']
         if 'category' in _raw_data and _raw_data['category'] is not None:
             _form_data['category'] = _raw_data['category']
         if 'visibility' in _raw_data and _raw_data['visibility'] is not None:
@@ -474,8 +467,6 @@ class SkillsSkillsAPI:
             _files['cover'] = _raw_data['cover']
         if 'name' in _raw_data and _raw_data['name'] is not None:
             _form_data['name'] = _raw_data['name']
-        if 'short_description' in _raw_data and _raw_data['short_description'] is not None:
-            _form_data['short_description'] = _raw_data['short_description']
         if 'category' in _raw_data and _raw_data['category'] is not None:
             _form_data['category'] = _raw_data['category']
         if 'visibility' in _raw_data and _raw_data['visibility'] is not None:
@@ -526,30 +517,6 @@ class SkillsSkillsAPI:
                 msg, request=response.request, response=response
             )
         return [SkillVersion.model_validate(item) for item in response.json()]
-
-
-    async def skills_versions_create_create(
-        self,
-        slug: str,
-        data: SkillVersionCreateRequest,
-    ) -> SkillVersion:
-        """
-        Create a new skill version
-
-        Publish a new version of a skill. Only the author can do this.
-        """
-        url = f"/api/skills/skills/{slug}/versions/create/"
-        response = await self._client.post(url, json=data.model_dump(mode="json", exclude_unset=True, exclude_none=True))
-        if not response.is_success:
-            try:
-                error_body = response.json()
-            except Exception:
-                error_body = response.text
-            msg = f"{response.status_code}: {error_body}"
-            raise httpx.HTTPStatusError(
-                msg, request=response.request, response=response
-            )
-        return SkillVersion.model_validate(response.json())
 
 
     async def skills_my_list(

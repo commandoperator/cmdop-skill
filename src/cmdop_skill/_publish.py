@@ -8,13 +8,6 @@ import importlib.util
 from pathlib import Path
 from typing import Any, Literal
 
-import sys
-
-if sys.version_info >= (3, 11):
-    import tomllib
-else:
-    import tomli as tomllib  # type: ignore[no-redef]
-
 DEFAULT_REPOSITORY_URL = "https://github.com/commandoperator/cmdop-skills-lab"
 
 IGNORE_DIRS = {
@@ -148,34 +141,6 @@ def _load_skill_config(config_path: Path) -> dict[str, Any]:
     )
 
 
-def _read_pyproject(base: Path) -> dict[str, Any]:
-    """Extract SkillConfig-compatible fields from ``pyproject.toml``."""
-    toml_path = base / "pyproject.toml"
-    if not toml_path.is_file():
-        return {}
-
-    with open(toml_path, "rb") as f:
-        data = tomllib.load(f)
-
-    proj = data.get("project", {})
-    urls = proj.get("urls", {})
-
-    result: dict[str, Any] = {}
-    if proj.get("name"):
-        result["name"] = proj["name"]
-    if proj.get("version"):
-        result["version"] = proj["version"]
-    if proj.get("description"):
-        result["short_description"] = proj["description"]
-        result["description"] = proj["description"]
-    if proj.get("dependencies"):
-        result["requires"] = proj["dependencies"]
-    if proj.get("keywords"):
-        result["tags"] = proj["keywords"]
-    result["repository_url"] = urls.get("Repository", DEFAULT_REPOSITORY_URL)
-    return result
-
-
 def parse_skill_manifest(path: Path) -> dict[str, Any]:
     """Load skill manifest from ``skill/config.py``, enriched by ``pyproject.toml``.
 
@@ -184,6 +149,8 @@ def parse_skill_manifest(path: Path) -> dict[str, Any]:
     Returns:
         Dict with at least ``name`` and ``version`` keys.
     """
+    from cmdop_skill._resolve import read_pyproject_full
+
     base = path if path.is_dir() else path.parent
 
     config_py = base / "skill" / "config.py"
@@ -196,7 +163,7 @@ def parse_skill_manifest(path: Path) -> dict[str, Any]:
     manifest = _load_skill_config(config_py)
 
     # Backfill empty fields from pyproject.toml
-    pyproject = _read_pyproject(base)
+    pyproject = read_pyproject_full(base)
     for key, value in pyproject.items():
         if not manifest.get(key):
             manifest[key] = value
@@ -209,6 +176,11 @@ def parse_skill_manifest(path: Path) -> dict[str, Any]:
     return manifest
 
 
+def _read_file(path: Path) -> str:
+    """Read file as text, return empty string if missing."""
+    return path.read_text(encoding="utf-8") if path.is_file() else ""
+
+
 async def publish_skill(
     path: Path,
     api_key: str,
@@ -216,6 +188,9 @@ async def publish_skill(
     mode: Literal["prod", "dev", "local"] = "prod",
 ) -> dict[str, Any]:
     """Publish a skill to the CMDOP marketplace.
+
+    Sends raw manifest + skill.md + README to Django.
+    Django does LLM parsing, version creation, and translations.
 
     Args:
         path: Path to skill directory (must contain skill/config.py)
@@ -230,14 +205,18 @@ async def publish_skill(
 
     path = Path(path).resolve()
 
-    # 1. Parse manifest
+    # 1. Parse manifest (local — for name, version, metadata)
     m = parse_skill_manifest(path)
     name = m["name"]
     version = m["version"]
 
-    # 2. Collect files
-    files = collect_skill_files(path)
-    file_payloads = [{"path": f["path"], "content": f["content"]} for f in files]
+    # 2. Read raw files to send to Django
+    raw_manifest = _read_file(path / "pyproject.toml")
+    skill_md = _read_file(path / "skill" / "readme.md")
+    readme = _read_file(path / "README.md") or _read_file(path / "readme.md")
+
+    if not raw_manifest:
+        raise FileNotFoundError(f"pyproject.toml not found in {path}")
 
     # 3. Publish via API
     api_kwargs: dict[str, Any] = {"api_key": api_key, "mode": mode}
@@ -253,41 +232,31 @@ async def publish_skill(
         except Exception:
             skill_exists = False
 
-        # Create skill if new
+        # Create skill if new (only name — category/tags/description
+        # are auto-assigned during publish by server-side LLM)
         if not skill_exists:
-            create_kwargs: dict[str, Any] = {
-                "name": name,
-                "short_description": m.get("short_description", "")
-                or (m.get("description", "")[:300]),
-                "description": m.get("description", ""),
-            }
-            if m.get("category"):
-                create_kwargs["category"] = m["category"]
-            if m.get("tags"):
-                create_kwargs["tags"] = [t[:50] for t in m["tags"]]
-            if m.get("visibility"):
-                create_kwargs["visibility"] = m["visibility"]
-            if m.get("repository_url"):
-                create_kwargs["repository_url"] = m["repository_url"]
+            try:
+                await api.skills.create(name=name)
+            except Exception:
+                # Response parsing may fail, but skill may be created.
+                try:
+                    await api.skills.get(slug)
+                except Exception:
+                    raise ValueError(f"Failed to create skill '{name}' on server")
 
-            await api.skills.create(**create_kwargs)
-
-        # Create version with files
-        ver_kwargs: dict[str, Any] = {
-            "slug": slug,
-            "version": version,
-            "files": file_payloads,
-        }
-        if m.get("changelog"):
-            ver_kwargs["changelog"] = m["changelog"]
-
-        ver = await api.skills.create_version(**ver_kwargs)
+        # Publish: raw_manifest → Django LLM parse + translate
+        ver = await api.skills.publish(
+            slug=slug,
+            raw_manifest=raw_manifest,
+            skill_md=skill_md or None,
+            readme=readme or None,
+            changelog=m.get("changelog"),
+        )
 
     return {
         "ok": True,
         "skill": slug,
         "version": version,
-        "files_count": len(file_payloads),
         "created": not skill_exists,
         "version_id": str(getattr(ver, "id", "")),
     }

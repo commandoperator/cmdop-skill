@@ -44,7 +44,7 @@ class CMDOPSkillsAPI:
         api_key: str | None = None,
         base_url: str | None = None,
         mode: Literal["prod", "dev", "local"] = "prod",
-        timeout: float = 30.0,
+        timeout: float = 120.0,
     ) -> None:
         """
         Initialize CMDOP Skills API client.
@@ -84,7 +84,7 @@ class CMDOPSkillsAPI:
             from cmdop_skill.api.generated import skills
             from cmdop_skill.api.services.skills import SkillsService
 
-            self._skills_api = skills.API(self._base_url)
+            self._skills_api = skills.API(self._base_url, timeout=self._timeout)
             self._skills_api.set_token(self._api_key)
             self._skills_service = SkillsService(self._skills_api)
 

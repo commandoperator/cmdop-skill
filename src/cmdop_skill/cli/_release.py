@@ -139,7 +139,7 @@ def release(
     api_key: Optional[str] = typer.Option(None, "--api-key", envvar="CMDOP_API_KEY"),
     json_mode: bool = typer.Option(False, "--json", help="JSON output"),
 ) -> None:
-    """Bump version, build, upload to PyPI, and publish to CMDOP marketplace."""
+    """Bump version, publish to CMDOP marketplace, build and upload to PyPI."""
     from rich.prompt import Confirm
 
     from cmdop_skill._publish import collect_skill_files, parse_skill_manifest, publish_skill
@@ -192,6 +192,31 @@ def release(
 
     # JSON mode — no wizard
     if json_mode:
+        result: dict[str, object] = {
+            "ok": True,
+            "name": name,
+            "version": new_version,
+            "target": target,
+        }
+
+        # 1. Publish to CMDOP marketplace first
+        if do_publish:
+            key = _resolve_api_key(api_key, json_mode)
+            try:
+                pub_result = asyncio.run(
+                    publish_skill(path=resolved_path, api_key=key)
+                )
+                result["marketplace"] = pub_result
+            except Exception as exc:
+                result["ok"] = False
+                result["marketplace_error"] = str(exc)
+                print(json.dumps(result, indent=2, default=str))
+                raise SystemExit(1)
+
+            from cmdop_skill.api.config import DASHBOARD_SKILLS_URL
+            result["dashboard_url"] = DASHBOARD_SKILLS_URL
+
+        # 2. Build + upload to PyPI
         clean(resolved_path)
         ok, err = pypi_build(resolved_path)
         if not ok:
@@ -199,39 +224,19 @@ def release(
             raise SystemExit(1)
 
         ok, out = upload(resolved_path, test_pypi=test_pypi)
-        result: dict[str, object] = {
-            "ok": ok,
-            "name": name,
-            "version": new_version,
-            "target": target,
-            "files": [{"name": n, "size": s} for n, s in dist_files(resolved_path)],
-        }
+        result["files"] = [{"name": n, "size": s} for n, s in dist_files(resolved_path)]
         if not ok:
+            result["ok"] = False
             result["error"] = out
             print(json.dumps(result, indent=2, default=str))
             raise SystemExit(1)
-
-        # CMDOP marketplace publish
-        if do_publish:
-            key = _resolve_api_key(api_key, json_mode)
-            try:
-                # Re-parse manifest to pick up bumped version
-                pub_result = asyncio.run(
-                    publish_skill(path=resolved_path, api_key=key)
-                )
-                result["marketplace"] = pub_result
-            except Exception as exc:
-                result["marketplace_error"] = str(exc)
-
-            from cmdop_skill.api.config import DASHBOARD_SKILLS_URL
-            result["dashboard_url"] = DASHBOARD_SKILLS_URL
 
         print(json.dumps(result, indent=2, default=str))
         raise SystemExit(0)
 
     # Interactive
     bump_str = f"{old_version} → {new_version}" if not no_bump else f"{old_version} (no bump)"
-    targets = target + (" + CMDOP" if do_publish else "")
+    targets = ("CMDOP + " if do_publish else "") + target
     console.print(f"\n  [bold]{name}[/bold]  {bump_str}  →  {targets}\n")
 
     if not Confirm.ask("  Release?", default=False, console=console):
@@ -240,39 +245,21 @@ def release(
         console.print("[dim]Cancelled.[/dim]")
         raise SystemExit(0)
 
-    # Clean + Build
-    with console.status("[bold green]Building...", spinner="dots"):
-        clean(resolved_path)
-        ok, err = pypi_build(resolved_path)
-
-    if not ok:
-        err_console.print(f"  [bold red]✗[/bold red] Build failed\n{err}")
-        raise SystemExit(1)
-
-    for fname, fsize in dist_files(resolved_path):
-        console.print(f"  [cyan]{fname}[/cyan] ({fsize / 1024:.1f} KB)")
-
-    # Upload to PyPI
-    with console.status(f"[bold green]Uploading to {target}...", spinner="dots"):
-        ok, out = upload(resolved_path, test_pypi=test_pypi)
-
-    if not ok:
-        err_console.print(f"  [bold red]✗[/bold red] Upload failed\n{out}")
-        raise SystemExit(1)
-
-    pypi_url = "https://test.pypi.org" if test_pypi else "https://pypi.org"
-    console.print(f"  [bold green]✓[/bold green] {name} v{new_version} → {target}")
-    console.print(f"  [dim]{pypi_url}/project/{name}/[/dim]")
-
-    # Publish to CMDOP marketplace
+    # 1. Publish to CMDOP marketplace first
     if do_publish:
         key = _resolve_api_key(api_key, json_mode)
 
         def _do_publish(k: str) -> dict:
             return asyncio.run(publish_skill(path=resolved_path, api_key=k))
 
-        with console.status("[bold green]Publishing to CMDOP...", spinner="dots"):
-            pub_result = api_call_with_retry(_do_publish, key, json_mode)
+        pub_error = None
+        try:
+            with console.status("[bold green]Publishing to CMDOP...", spinner="dots"):
+                pub_result = _do_publish(key)
+        except Exception as exc:
+            import traceback
+            pub_result = {}
+            pub_error = traceback.format_exc()
 
         if pub_result.get("ok"):
             from cmdop_skill.api.config import DASHBOARD_SKILLS_URL
@@ -285,9 +272,33 @@ def release(
                 f"  [dim]{DASHBOARD_SKILLS_URL}[/dim]"
             )
         else:
+            error_msg = pub_error or pub_result.get("error") or str(pub_result)
             err_console.print(
-                f"  [bold red]✗[/bold red] CMDOP publish failed: {pub_result.get('error', '?')}"
+                f"  [bold red]✗[/bold red] CMDOP publish failed:\n  {error_msg}"
             )
-            err_console.print("  [dim]PyPI upload succeeded. Run 'cmdop-skill publish' to retry.[/dim]")
+            raise SystemExit(1)
+
+    # 2. Build + upload to PyPI
+    with console.status("[bold green]Building...", spinner="dots"):
+        clean(resolved_path)
+        ok, err = pypi_build(resolved_path)
+
+    if not ok:
+        err_console.print(f"  [bold red]✗[/bold red] Build failed\n{err}")
+        raise SystemExit(1)
+
+    for fname, fsize in dist_files(resolved_path):
+        console.print(f"  [cyan]{fname}[/cyan] ({fsize / 1024:.1f} KB)")
+
+    with console.status(f"[bold green]Uploading to {target}...", spinner="dots"):
+        ok, out = upload(resolved_path, test_pypi=test_pypi)
+
+    if not ok:
+        err_console.print(f"  [bold red]✗[/bold red] Upload failed\n{out}")
+        raise SystemExit(1)
+
+    pypi_url = "https://test.pypi.org" if test_pypi else "https://pypi.org"
+    console.print(f"  [bold green]✓[/bold green] {name} v{new_version} → {target}")
+    console.print(f"  [dim]{pypi_url}/project/{name}/[/dim]")
 
     console.print()

@@ -25,14 +25,13 @@ def publish(
     json_mode: bool = typer.Option(False, "--json", help="JSON output for CI"),
 ) -> None:
     """Publish a skill to the CMDOP marketplace."""
-    from cmdop_skill._publish import collect_skill_files, parse_skill_manifest, publish_skill
+    from cmdop_skill._publish import parse_skill_manifest, publish_skill, _read_file
 
     resolved_path = Path(path).resolve()
 
-    # Parse manifest and collect files
+    # Parse manifest
     try:
         manifest = parse_skill_manifest(resolved_path)
-        files = collect_skill_files(resolved_path)
     except (FileNotFoundError, ValueError) as exc:
         if json_mode:
             print(json.dumps({"ok": False, "error": str(exc), "code": "VALIDATION_ERROR"}, indent=2))
@@ -74,25 +73,21 @@ def publish(
         sdk_ver = "?"
 
     console.print()
+    # Show what raw files will be sent
+    raw_manifest = _read_file(resolved_path / "pyproject.toml")
+    skill_md = _read_file(resolved_path / "skill" / "skill.md") or _read_file(resolved_path / "skill.md")
+    readme = _read_file(resolved_path / "README.md") or _read_file(resolved_path / "readme.md")
+
     console.print(Panel.fit(
         f"[bold]Name:[/bold]        {name}\n"
         f"[bold]Version:[/bold]     {version}\n"
         f"[bold]Description:[/bold] {description or '[dim]—[/dim]'}\n"
-        f"[dim]cmdop-skill {sdk_ver}[/dim]",
+        f"[bold]Manifest:[/bold]    {'pyproject.toml' if raw_manifest else '[red]missing[/red]'}\n"
+        f"[bold]skill.md:[/bold]    {_format_size(len(skill_md)) if skill_md else '[dim]—[/dim]'}\n"
+        f"[bold]README:[/bold]      {_format_size(len(readme)) if readme else '[dim]—[/dim]'}\n"
+        f"[dim]cmdop-skill {sdk_ver} · LLM parse + translate on server[/dim]",
         title="[bold cyan]Skill Publish[/bold cyan]",
     ))
-
-    # Files table
-    table = Table(title=f"Files ({len(files)})", show_lines=False)
-    table.add_column("Path", style="cyan")
-    table.add_column("Size", justify="right")
-    table.add_column("Type")
-
-    for f in files:
-        ftype = "binary" if f.get("is_binary") else "text"
-        table.add_row(f["path"], _format_size(f["size"]), ftype)
-
-    console.print(table)
     console.print()
 
     if not Confirm.ask("  Publish?", default=False, console=console):
@@ -105,7 +100,7 @@ def publish(
         from cmdop_skill.api.config import DASHBOARD_SKILLS_URL
 
         console.print(
-            f"  [bold green]\u2713[/bold green] Published {name} v{version} ({len(files)} files)"
+            f"  [bold green]\u2713[/bold green] Published {name} v{version}"
         )
         console.print(
             f"  [dim]Dashboard:[/dim] [link={DASHBOARD_SKILLS_URL}]{DASHBOARD_SKILLS_URL}[/link]"

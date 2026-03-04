@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "test-scaffold-demo"
-version = "0.1.0"
+version = "0.1.3"
 description = "Auto-generated demo skill for testing scaffold"
 readme = "README.md"
 license = "MIT"
@@ -48,7 +48,7 @@ dev = [
 test-scaffold-demo = "test_scaffold_demo._skill:main"
 
 [project.urls]
-Homepage = "https://cmdop.com"
+Homepage = "https://cmdop.com/skills/test-scaffold-demo/"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/test_scaffold_demo"]

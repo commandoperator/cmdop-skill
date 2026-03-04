@@ -166,6 +166,31 @@ class SkillsService:
         )
         return await self._client.skills_versions_create_create(slug=slug, data=data)
 
+    async def publish(
+        self,
+        slug: str,
+        raw_manifest: str,
+        skill_md: str | None = None,
+        readme: str | None = None,
+        changelog: str | None = None,
+    ) -> SkillVersion:
+        """Publish via LLM-powered parsing + translations.
+
+        Sends raw manifest text to Django — server parses it,
+        creates version, and translates descriptions.
+        """
+        from cmdop_skill.api.generated.skills.skills__api__skills.models import (
+            SkillPublishRequest,
+        )
+
+        data = SkillPublishRequest(
+            raw_manifest=raw_manifest,
+            skill_md=skill_md,
+            readme=readme,
+            changelog=changelog,
+        )
+        return await self._client.skills_publish_create(slug=slug, data=data)
+
     # ── Reviews ────────────────────────────────────────────
 
     async def list_reviews(

@@ -3,11 +3,8 @@
 from __future__ import annotations
 
 import re
-from typing import Literal
 
 from pydantic import BaseModel, Field, field_validator, model_validator
-
-from cmdop_skill._skill_config import SkillCategory
 
 
 class ScaffoldConfig(BaseModel):
@@ -17,9 +14,6 @@ class ScaffoldConfig(BaseModel):
     description: str = Field(default="", max_length=300)
     author_name: str = Field(default="CMDOP Team", max_length=100)
     author_email: str = Field(default="team@cmdop.com", max_length=100)
-    category: SkillCategory = SkillCategory.OTHER
-    visibility: Literal["public", "private"] = "public"
-    tags: list[str] = Field(default_factory=list)
     package_name: str = ""
 
     @field_validator("name")
@@ -31,13 +25,6 @@ class ScaffoldConfig(BaseModel):
                 f"Name must be kebab-case (lowercase letters, digits, hyphens): {v!r}"
             )
         return v
-
-    @field_validator("tags", mode="before")
-    @classmethod
-    def _parse_tags(cls, v: object) -> list[str]:
-        if isinstance(v, str):
-            return [t.strip() for t in v.split(",") if t.strip()]
-        return list(v)  # type: ignore[arg-type]
 
     @model_validator(mode="after")
     def _derive_package_name(self) -> ScaffoldConfig:

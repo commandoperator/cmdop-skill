@@ -17,16 +17,10 @@ def generate_manifest(skill: Skill) -> str:
     lines: list[str] = [
         "from cmdop_skill import SkillConfig",
         "",
-        "config = SkillConfig(",
-        f'    name="{skill.name}",',
-        f'    version="{skill.version}",',
+        "# name, version, description are auto-resolved from pyproject.toml",
+        "config = SkillConfig()",
+        "",
     ]
-
-    if skill.description:
-        lines.append(f'    description="{skill.description}",')
-
-    lines.append(")")
-    lines.append("")
 
     return "\n".join(lines)
 
