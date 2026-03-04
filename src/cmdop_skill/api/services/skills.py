@@ -18,6 +18,7 @@ if TYPE_CHECKING:
         SkillCreate,
         SkillDetail,
         SkillInstall,
+        SkillPublishRequest,
         SkillStar,
         SkillTag,
         SkillUpdate,
@@ -173,38 +174,24 @@ class SkillsService:
         skill_md: str | None = None,
         readme: str | None = None,
         changelog: str | None = None,
-    ) -> dict[str, Any]:
+    ) -> None:
         """Publish via LLM-powered parsing + translations.
 
         Sends raw manifest text to Django — server starts background
         processing and returns 202 immediately.
-
-        Returns:
-            Dict with keys: ok, status ('processing'), slug.
+        Poll /publish-status/ for result.
         """
-        import httpx
+        from cmdop_skill.api.generated.skills.skills__api__skills.models import (
+            SkillPublishRequest,
+        )
 
-        payload: dict[str, Any] = {'raw_manifest': raw_manifest}
-        if skill_md is not None:
-            payload['skill_md'] = skill_md
-        if readme is not None:
-            payload['readme'] = readme
-        if changelog is not None:
-            payload['changelog'] = changelog
-
-        url = f"/api/skills/skills/{slug}/publish/"
-        response = await self._api._client.post(url, json=payload)
-        if not response.is_success:
-            try:
-                error_body = response.json()
-            except Exception:
-                error_body = response.text
-            raise httpx.HTTPStatusError(
-                f"{response.status_code}: {error_body}",
-                request=response.request,
-                response=response,
-            )
-        return response.json()
+        data = SkillPublishRequest(
+            raw_manifest=raw_manifest,
+            skill_md=skill_md,
+            readme=readme,
+            changelog=changelog,
+        )
+        await self._client.skills_publish_create(slug, data)
 
     # ── Reviews ────────────────────────────────────────────
 
