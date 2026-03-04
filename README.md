@@ -1,6 +1,6 @@
 # cmdop-skill
 
-Decorator-based CLI framework for building, testing, and publishing CMDOP skills.
+Build and publish CMDOP skills.
 
 ## Install
 
