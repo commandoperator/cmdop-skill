@@ -15,6 +15,8 @@ if sys.version_info >= (3, 11):
 else:
     import tomli as tomllib  # type: ignore[no-redef]
 
+DEFAULT_REPOSITORY_URL = "https://github.com/commandoperator/cmdop-skills-lab"
+
 IGNORE_DIRS = {
     "__pycache__",
     ".pytest_cache",
@@ -101,9 +103,14 @@ def collect_skill_files(path: Path) -> list[dict[str, Any]]:
         entry: dict[str, Any] = {"path": str(rel), "size": item.stat().st_size}
 
         if is_text:
-            entry["content"] = item.read_text(encoding="utf-8")
+            content = item.read_text(encoding="utf-8")
+            if not content:
+                continue
+            entry["content"] = content
         else:
             raw = item.read_bytes()
+            if not raw:
+                continue
             entry["content"] = base64.b64encode(raw).decode("ascii")
             entry["is_binary"] = True
 
@@ -165,8 +172,7 @@ def _read_pyproject(base: Path) -> dict[str, Any]:
         result["requires"] = proj["dependencies"]
     if proj.get("keywords"):
         result["tags"] = proj["keywords"]
-    if urls.get("Repository"):
-        result["repository_url"] = urls["Repository"]
+    result["repository_url"] = urls.get("Repository", DEFAULT_REPOSITORY_URL)
     return result
 
 

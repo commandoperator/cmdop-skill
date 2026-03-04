@@ -5,7 +5,7 @@ from __future__ import annotations
 import typer
 from rich.prompt import Prompt
 
-from cmdop_skill._cli import app, console, err_console
+from cmdop_skill.cli import app, console, err_console
 from cmdop_skill._config import clear_api_key, get_api_key, get_apikey_path, set_api_key
 
 config_app = typer.Typer(help="Manage global configuration")

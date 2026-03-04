@@ -44,7 +44,7 @@ def _format_size(size: int) -> str:
 
 def _resolve_api_key(api_key: str | None, json_mode: bool) -> str:
     """Resolve API key: flag -> env -> saved config -> interactive prompt."""
-    from cmdop_skill._cli_auth import DASHBOARD_URL, prompt_new_key
+    from cmdop_skill.cli._auth import DASHBOARD_URL, prompt_new_key
     from cmdop_skill._config import get_api_key, set_api_key
 
     key = api_key or os.environ.get("CMDOP_API_KEY") or get_api_key()
@@ -73,9 +73,11 @@ def _resolve_api_key(api_key: str | None, json_mode: bool) -> str:
 
 
 # Register command modules (side-effect imports)
-import cmdop_skill._cli_config as _cli_config  # noqa: E402, F401
-import cmdop_skill._cli_dev as _cli_dev  # noqa: E402, F401
-import cmdop_skill._cli_publish as _cli_publish  # noqa: E402, F401
+import cmdop_skill.cli._config_cmd as _config_cmd  # noqa: E402, F401
+import cmdop_skill.cli._dev as _dev  # noqa: E402, F401
+import cmdop_skill.cli._init_cmd as _init_cmd  # noqa: E402, F401
+import cmdop_skill.cli._release as _release  # noqa: E402, F401
+import cmdop_skill.cli._publish_cmd as _publish_cmd  # noqa: E402, F401
 
 
 def main(argv: list[str] | None = None) -> None:

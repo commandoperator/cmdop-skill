@@ -12,8 +12,8 @@ from rich.panel import Panel
 from rich.prompt import Confirm
 from rich.table import Table
 
-from cmdop_skill._cli import app, console, err_console, _format_size, _resolve_api_key
-from cmdop_skill._cli_auth import api_call_with_retry
+from cmdop_skill.cli import app, console, err_console, _format_size, _resolve_api_key
+from cmdop_skill.cli._auth import api_call_with_retry
 
 
 @app.command()

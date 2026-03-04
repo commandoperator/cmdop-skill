@@ -7,7 +7,7 @@ from typing import Callable, TypeVar
 
 from rich.prompt import Prompt
 
-from cmdop_skill._cli import err_console
+from cmdop_skill.cli import err_console
 from cmdop_skill.api.config import DASHBOARD_SETTINGS_URL as DASHBOARD_URL
 
 T = TypeVar("T")
