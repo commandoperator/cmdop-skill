@@ -6,7 +6,7 @@ Provides high-level interface for skill marketplace operations.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from cmdop_skill.api.generated.skills import API as SkillsAPI
@@ -173,23 +173,38 @@ class SkillsService:
         skill_md: str | None = None,
         readme: str | None = None,
         changelog: str | None = None,
-    ) -> SkillVersion:
+    ) -> dict[str, Any]:
         """Publish via LLM-powered parsing + translations.
 
-        Sends raw manifest text to Django — server parses it,
-        creates version, and translates descriptions.
-        """
-        from cmdop_skill.api.generated.skills.skills__api__skills.models import (
-            SkillPublishRequest,
-        )
+        Sends raw manifest text to Django — server starts background
+        processing and returns 202 immediately.
 
-        data = SkillPublishRequest(
-            raw_manifest=raw_manifest,
-            skill_md=skill_md,
-            readme=readme,
-            changelog=changelog,
-        )
-        return await self._client.skills_publish_create(slug=slug, data=data)
+        Returns:
+            Dict with keys: ok, status ('processing'), slug.
+        """
+        import httpx
+
+        payload: dict[str, Any] = {'raw_manifest': raw_manifest}
+        if skill_md is not None:
+            payload['skill_md'] = skill_md
+        if readme is not None:
+            payload['readme'] = readme
+        if changelog is not None:
+            payload['changelog'] = changelog
+
+        url = f"/api/skills/skills/{slug}/publish/"
+        response = await self._api._client.post(url, json=payload)
+        if not response.is_success:
+            try:
+                error_body = response.json()
+            except Exception:
+                error_body = response.text
+            raise httpx.HTTPStatusError(
+                f"{response.status_code}: {error_body}",
+                request=response.request,
+                response=response,
+            )
+        return response.json()
 
     # ── Reviews ────────────────────────────────────────────
 

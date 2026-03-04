@@ -44,7 +44,7 @@ class CMDOPSkillsAPI:
         api_key: str | None = None,
         base_url: str | None = None,
         mode: Literal["prod", "dev", "local"] = "prod",
-        timeout: float = 120.0,
+        timeout: float = 300.0,
     ) -> None:
         """
         Initialize CMDOP Skills API client.

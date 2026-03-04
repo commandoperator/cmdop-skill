@@ -86,7 +86,7 @@ class SkillList(BaseModel):
 )
     status: PatchedSkillUpdateRequestStatus | None = Field(
     None,
-    description='* `draft` - Draft * `published` ...',
+    description='* `draft` - Draft * `processing`...',
 )
     is_verified: bool = Field(description='Admin-verified trusted skill')
     icon: str | None = Field(None, description='Card thumbnail image')
@@ -244,7 +244,7 @@ class SkillDetail(BaseModel):
 )
     status: PatchedSkillUpdateRequestStatus | None = Field(
     None,
-    description='* `draft` - Draft * `published` ...',
+    description='* `draft` - Draft * `processing`...',
 )
     is_verified: bool = Field(description='Admin-verified trusted skill')
     icon: str | None = Field(None, description='Card thumbnail image')
@@ -298,7 +298,7 @@ class SkillUpdateRequest(BaseModel):
 )
     status: PatchedSkillUpdateRequestStatus | None = Field(
     None,
-    description='* `draft` - Draft * `published` ...',
+    description='* `draft` - Draft * `processing`...',
 )
     icon: Any | None = None
     cover: Any | None = None
@@ -335,7 +335,7 @@ class SkillUpdate(BaseModel):
 )
     status: PatchedSkillUpdateRequestStatus | None = Field(
     None,
-    description='* `draft` - Draft * `published` ...',
+    description='* `draft` - Draft * `processing`...',
 )
     icon: str | None = None
     cover: str | None = None
@@ -372,7 +372,7 @@ class PatchedSkillUpdateRequest(BaseModel):
 )
     status: PatchedSkillUpdateRequestStatus | None = Field(
     None,
-    description='* `draft` - Draft * `published` ...',
+    description='* `draft` - Draft * `processing`...',
 )
     icon: Any | None = None
     cover: Any | None = None
@@ -384,9 +384,9 @@ class PatchedSkillUpdateRequest(BaseModel):
 
 
 
-class SkillFile(BaseModel):
+class SkillMeta(BaseModel):
     """
-    Serializer for a single file in a skill version.
+    Install-time metadata written to meta.json inside the skill directory.
 
     Response model (includes read-only fields).
     """
@@ -397,8 +397,13 @@ class SkillFile(BaseModel):
         frozen=False,
     )
 
-    path: str = Field(description='Relative file path, e.g. "skill....')
-    content: str = Field(description='UTF-8 text content')
+    installed_at: datetime.datetime = Field(description='When the skill was installed (IS...')
+    installed_from: str = Field(description='Installation source: "marketplac...')
+    installed_version: str = Field(description='Version at install time')
+    updated_at: datetime.datetime | None = Field(
+    None,
+    description='When the skill was last updated ...',
+)
 
 
 
@@ -417,6 +422,24 @@ class SkillPackages(BaseModel):
 
     pip: list[str] | None = Field(None, description='Python pip packages, e.g. ["http...')
     npm: list[str] | None = Field(None, description='Node npm packages, e.g. ["axios@...')
+
+
+
+class SkillFile(BaseModel):
+    """
+    Serializer for a single file in a skill version.
+
+    Response model (includes read-only fields).
+    """
+
+    model_config = ConfigDict(
+        validate_assignment=True,
+        extra="allow",
+        frozen=False,
+    )
+
+    path: str = Field(description='Relative file path, e.g. "skill....')
+    content: str = Field(description='UTF-8 text content')
 
 
 
@@ -440,6 +463,8 @@ class SkillInstall(BaseModel):
     skill_md: str = Field(description='Skill system prompt / descriptio...')
     files: list[SkillFile] = Field(description='All files that make up this skill')
     packages: SkillPackages = ...
+    run_check: str = Field(description='Command to verify skill, e.g. "p...')
+    meta: SkillMeta = ...
 
 
 
@@ -531,7 +556,7 @@ class SkillListRequest(BaseModel):
 )
     status: PatchedSkillUpdateRequestStatus | None = Field(
     None,
-    description='* `draft` - Draft * `published` ...',
+    description='* `draft` - Draft * `processing`...',
 )
     icon: Any | None = Field(None, description='Card thumbnail image')
     cover: Any | None = Field(None, description='Detail page banner image')

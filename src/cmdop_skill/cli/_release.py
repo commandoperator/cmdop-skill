@@ -254,8 +254,42 @@ def release(
 
         pub_error = None
         try:
-            with console.status("[bold green]Publishing to CMDOP...", spinner="dots"):
-                pub_result = _do_publish(key)
+            import threading
+            from rich.live import Live
+            from rich.text import Text
+            import time as _time
+
+            _pub_result_box: list[dict] = []
+            _pub_error_box: list[str] = []
+
+            def _run_publish() -> None:
+                try:
+                    _pub_result_box.append(_do_publish(key))
+                except Exception:
+                    import traceback
+                    _pub_error_box.append(traceback.format_exc())
+
+            t = threading.Thread(target=_run_publish, daemon=True)
+            start = _time.monotonic()
+            t.start()
+
+            with Live(console=console, refresh_per_second=4) as live:
+                while t.is_alive():
+                    elapsed = _time.monotonic() - start
+                    live.update(
+                        Text.from_markup(
+                            f"  [bold green]⠋[/bold green] Publishing to CMDOP… "
+                            f"[dim]({elapsed:.0f}s)[/dim]"
+                        )
+                    )
+                    _time.sleep(0.25)
+
+            t.join()
+            if _pub_error_box:
+                pub_result = {}
+                pub_error = _pub_error_box[0]
+            else:
+                pub_result = _pub_result_box[0] if _pub_result_box else {}
         except Exception as exc:
             import traceback
             pub_result = {}

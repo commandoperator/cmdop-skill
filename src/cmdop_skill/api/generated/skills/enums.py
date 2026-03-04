@@ -69,11 +69,13 @@ class PatchedSkillUpdateRequestVisibility(StrEnum):
 class PatchedSkillUpdateRequestStatus(StrEnum):
     """
     * `draft` - Draft
+    * `processing` - Processing
     * `published` - Published
     * `suspended` - Suspended
     """
 
     DRAFT = "draft"
+    PROCESSING = "processing"
     PUBLISHED = "published"
     SUSPENDED = "suspended"
 

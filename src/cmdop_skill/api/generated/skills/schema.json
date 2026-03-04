@@ -480,8 +480,8 @@
         "/api/skills/skills/{slug}/publish/": {
             "post": {
                 "operationId": "skills_skills_publish_create",
-                "description": "Upload raw manifest — LLM parses it, creates version, updates metadata.",
-                "summary": "Publish a new skill version",
+                "description": "Upload raw manifest — starts background LLM parsing + translation. Returns 202 immediately. Poll /publish-status/ for result.",
+                "summary": "Publish a new skill version (async)",
                 "parameters": [
                     {
                         "in": "path",
@@ -523,15 +523,44 @@
                     }
                 ],
                 "responses": {
-                    "201": {
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/SkillVersion"
-                                }
-                            }
+                    "202": {
+                        "description": "Processing started"
+                    },
+                    "400": {
+                        "description": "Validation or permission error"
+                    }
+                },
+                "x-async-capable": false
+            }
+        },
+        "/api/skills/skills/{slug}/publish-status/": {
+            "get": {
+                "operationId": "skills_skills_publish_status_retrieve",
+                "description": "Poll this endpoint after POST /publish/ to check progress.",
+                "summary": "Check publish status",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "slug",
+                        "schema": {
+                            "type": "string",
+                            "title": "URL slug",
+                            "description": "Globally unique slug for this skill"
                         },
-                        "description": ""
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Skills"
+                ],
+                "security": [
+                    {
+                        "jwtAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Current publish status"
                     }
                 },
                 "x-async-capable": false
@@ -1271,12 +1300,13 @@
                     "status": {
                         "enum": [
                             "draft",
+                            "processing",
                             "published",
                             "suspended"
                         ],
                         "type": "string",
-                        "description": "* `draft` - Draft\n* `published` - Published\n* `suspended` - Suspended",
-                        "x-spec-enum-id": "538d629e833ac594"
+                        "description": "* `draft` - Draft\n* `processing` - Processing\n* `published` - Published\n* `suspended` - Suspended",
+                        "x-spec-enum-id": "30e3e83d79358fa2"
                     },
                     "icon": {
                         "type": [
@@ -1444,12 +1474,13 @@
                     "status": {
                         "enum": [
                             "draft",
+                            "processing",
                             "published",
                             "suspended"
                         ],
                         "type": "string",
-                        "description": "* `draft` - Draft\n* `published` - Published\n* `suspended` - Suspended",
-                        "x-spec-enum-id": "538d629e833ac594"
+                        "description": "* `draft` - Draft\n* `processing` - Processing\n* `published` - Published\n* `suspended` - Suspended",
+                        "x-spec-enum-id": "30e3e83d79358fa2"
                     },
                     "is_verified": {
                         "type": "boolean",
@@ -1648,13 +1679,27 @@
                             }
                         ],
                         "description": "Package dependencies (pip/npm)"
+                    },
+                    "run_check": {
+                        "type": "string",
+                        "description": "Command to verify skill, e.g. \"python -m test_scaffold_demo check\""
+                    },
+                    "meta": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/SkillMeta"
+                            }
+                        ],
+                        "description": "Install metadata for meta.json"
                     }
                 },
                 "required": [
                     "files",
                     "install_command",
+                    "meta",
                     "packages",
                     "readme",
+                    "run_check",
                     "skill_md",
                     "slug",
                     "version"
@@ -1726,12 +1771,13 @@
                     "status": {
                         "enum": [
                             "draft",
+                            "processing",
                             "published",
                             "suspended"
                         ],
                         "type": "string",
-                        "description": "* `draft` - Draft\n* `published` - Published\n* `suspended` - Suspended",
-                        "x-spec-enum-id": "538d629e833ac594"
+                        "description": "* `draft` - Draft\n* `processing` - Processing\n* `published` - Published\n* `suspended` - Suspended",
+                        "x-spec-enum-id": "30e3e83d79358fa2"
                     },
                     "is_verified": {
                         "type": "boolean",
@@ -1857,12 +1903,13 @@
                     "status": {
                         "enum": [
                             "draft",
+                            "processing",
                             "published",
                             "suspended"
                         ],
                         "type": "string",
-                        "description": "* `draft` - Draft\n* `published` - Published\n* `suspended` - Suspended",
-                        "x-spec-enum-id": "538d629e833ac594"
+                        "description": "* `draft` - Draft\n* `processing` - Processing\n* `published` - Published\n* `suspended` - Suspended",
+                        "x-spec-enum-id": "30e3e83d79358fa2"
                     },
                     "icon": {
                         "type": [
@@ -1884,6 +1931,38 @@
                 },
                 "required": [
                     "name"
+                ]
+            },
+            "SkillMeta": {
+                "type": "object",
+                "description": "Install-time metadata written to meta.json inside the skill directory.",
+                "properties": {
+                    "installed_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "When the skill was installed (ISO 8601)"
+                    },
+                    "installed_from": {
+                        "type": "string",
+                        "description": "Installation source: \"marketplace\" or \"manual\""
+                    },
+                    "installed_version": {
+                        "type": "string",
+                        "description": "Version at install time"
+                    },
+                    "updated_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time",
+                        "description": "When the skill was last updated (null if never updated)"
+                    }
+                },
+                "required": [
+                    "installed_at",
+                    "installed_from",
+                    "installed_version"
                 ]
             },
             "SkillPackages": {
@@ -2104,12 +2183,13 @@
                     "status": {
                         "enum": [
                             "draft",
+                            "processing",
                             "published",
                             "suspended"
                         ],
                         "type": "string",
-                        "description": "* `draft` - Draft\n* `published` - Published\n* `suspended` - Suspended",
-                        "x-spec-enum-id": "538d629e833ac594"
+                        "description": "* `draft` - Draft\n* `processing` - Processing\n* `published` - Published\n* `suspended` - Suspended",
+                        "x-spec-enum-id": "30e3e83d79358fa2"
                     },
                     "icon": {
                         "type": [
@@ -2189,12 +2269,13 @@
                     "status": {
                         "enum": [
                             "draft",
+                            "processing",
                             "published",
                             "suspended"
                         ],
                         "type": "string",
-                        "description": "* `draft` - Draft\n* `published` - Published\n* `suspended` - Suspended",
-                        "x-spec-enum-id": "538d629e833ac594"
+                        "description": "* `draft` - Draft\n* `processing` - Processing\n* `published` - Published\n* `suspended` - Suspended",
+                        "x-spec-enum-id": "30e3e83d79358fa2"
                     },
                     "icon": {
                         "type": [

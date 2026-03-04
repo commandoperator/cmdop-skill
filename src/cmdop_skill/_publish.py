@@ -190,7 +190,7 @@ async def publish_skill(
     """Publish a skill to the CMDOP marketplace.
 
     Sends raw manifest + skill.md + README to Django.
-    Django does LLM parsing, version creation, and translations.
+    Server accepts the request (202) and processes asynchronously.
 
     Args:
         path: Path to skill directory (must contain skill/config.py)
@@ -244,8 +244,8 @@ async def publish_skill(
                 except Exception:
                     raise ValueError(f"Failed to create skill '{name}' on server")
 
-        # Publish: raw_manifest → Django LLM parse + translate
-        ver = await api.skills.publish(
+        # Publish: raw_manifest → Django processes async (returns 202)
+        await api.skills.publish(
             slug=slug,
             raw_manifest=raw_manifest,
             skill_md=skill_md or None,
@@ -258,5 +258,4 @@ async def publish_skill(
         "skill": slug,
         "version": version,
         "created": not skill_exists,
-        "version_id": str(getattr(ver, "id", "")),
     }

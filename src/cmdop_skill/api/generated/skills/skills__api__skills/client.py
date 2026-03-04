@@ -281,15 +281,12 @@ class SkillsSkillsAPI:
         return SkillInstall.model_validate(response.json())
 
 
-    async def skills_publish_create(
-        self,
-        slug: str,
-        data: SkillPublishRequest,
-    ) -> SkillVersion:
+    async def skills_publish_create(self, slug: str, data: SkillPublishRequest) -> None:
         """
-        Publish a new skill version
+        Publish a new skill version (async)
 
-        Upload raw manifest — LLM parses it, creates version, updates metadata.
+        Upload raw manifest — starts background LLM parsing + translation.
+        Returns 202 immediately. Poll /publish-status/ for result.
         """
         url = f"/api/skills/skills/{slug}/publish/"
         response = await self._client.post(url, json=data.model_dump(mode="json", exclude_unset=True, exclude_none=True))
@@ -302,7 +299,27 @@ class SkillsSkillsAPI:
             raise httpx.HTTPStatusError(
                 msg, request=response.request, response=response
             )
-        return SkillVersion.model_validate(response.json())
+        return None
+
+
+    async def skills_publish_status_retrieve(self, slug: str) -> None:
+        """
+        Check publish status
+
+        Poll this endpoint after POST /publish/ to check progress.
+        """
+        url = f"/api/skills/skills/{slug}/publish-status/"
+        response = await self._client.get(url)
+        if not response.is_success:
+            try:
+                error_body = response.json()
+            except Exception:
+                error_body = response.text
+            msg = f"{response.status_code}: {error_body}"
+            raise httpx.HTTPStatusError(
+                msg, request=response.request, response=response
+            )
+        return None
 
 
     async def skills_reviews_list(
