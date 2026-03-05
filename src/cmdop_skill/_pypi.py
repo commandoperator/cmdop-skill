@@ -38,18 +38,42 @@ def clean(path: Path) -> None:
             shutil.rmtree(egg)
 
 
+def _pip_install(tool: str) -> None:
+    """Install *tool* using the best available installer (uv pip > pip > pip3)."""
+    # 1. uv pip — works with uv-created venvs that have no pip
+    uv = shutil.which("uv")
+    if uv:
+        r = subprocess.run([uv, "pip", "install", tool, "-q"], capture_output=True)
+        if r.returncode == 0:
+            return
+    # 2. pip via sys.executable — standard venvs
+    r = subprocess.run(
+        [sys.executable, "-m", "pip", "install", tool, "-q"],
+        capture_output=True,
+    )
+    if r.returncode == 0:
+        return
+    # 3. pip3 — fallback for system Python without pip module
+    pip3 = shutil.which("pip3")
+    if pip3:
+        r = subprocess.run([pip3, "install", tool, "-q"], capture_output=True)
+        if r.returncode == 0:
+            return
+    raise RuntimeError(
+        f"Could not install '{tool}'. "
+        "Install it manually: pip install build twine"
+    )
+
+
 def ensure_build_tools() -> None:
     """Install ``build`` and ``twine`` if missing."""
     for tool in ("build", "twine"):
         r = subprocess.run(
-            [sys.executable, "-m", "pip", "show", tool],
+            [sys.executable, "-m", tool, "--version"],
             capture_output=True,
         )
         if r.returncode != 0:
-            subprocess.run(
-                [sys.executable, "-m", "pip", "install", tool, "-q"],
-                check=True,
-            )
+            _pip_install(tool)
 
 
 def build(path: Path) -> tuple[bool, str]:
