@@ -224,34 +224,57 @@ async def publish_skill(
         api_kwargs["base_url"] = base_url
 
     async with CMDOPSkillsAPI(**api_kwargs) as api:
-        # Check if skill exists
         slug = name
-        skill_exists = True
+        skill_exists = False
+
+        # Check if skill exists AND belongs to current user
         try:
-            await api.skills.get(slug)
+            existing = await api.skills.get(slug)
+            # get() returns skill — check ownership via my() list
+            my_skills = await api.skills.my()
+            my_slugs = {s.slug for s in (my_skills.results or [])}
+            if slug in my_slugs:
+                skill_exists = True
+            else:
+                raise ValueError(
+                    f"Skill '{slug}' already exists and belongs to another user. "
+                    "Choose a different name."
+                )
+        except ValueError:
+            raise
         except Exception:
             skill_exists = False
 
-        # Create skill if new (only name — category/tags/description
-        # are auto-assigned during publish by server-side LLM)
+        # Create skill if new
         if not skill_exists:
             try:
                 await api.skills.create(name=name)
             except Exception:
-                # Response parsing may fail, but skill may be created.
-                try:
-                    await api.skills.get(slug)
-                except Exception:
+                # Response parsing may fail, but skill may be created — verify.
+                my_skills = await api.skills.my()
+                my_slugs = {s.slug for s in (my_skills.results or [])}
+                if slug not in my_slugs:
                     raise ValueError(f"Failed to create skill '{name}' on server")
 
         # Publish: raw_manifest → Django processes async (returns 202)
-        await api.skills.publish(
-            slug=slug,
-            raw_manifest=raw_manifest,
-            skill_md=skill_md or None,
-            readme=readme or None,
-            changelog=m.get("changelog"),
-        )
+        try:
+            await api.skills.publish(
+                slug=slug,
+                raw_manifest=raw_manifest,
+                skill_md=skill_md or None,
+                readme=readme or None,
+                changelog=m.get("changelog"),
+            )
+        except Exception as exc:
+            import httpx
+            if isinstance(exc, httpx.HTTPStatusError):
+                try:
+                    body = exc.response.json()
+                    msg = body.get('message') or body.get('detail') or str(body)
+                except Exception:
+                    msg = exc.response.text or str(exc)
+                raise ValueError(f"Publish failed ({exc.response.status_code}): {msg}") from exc
+            raise
 
     return {
         "ok": True,

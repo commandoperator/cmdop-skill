@@ -11,7 +11,16 @@ from typing import Any
 if sys.version_info >= (3, 11):
     import tomllib
 else:
-    import tomli as tomllib  # type: ignore[no-redef]
+    try:
+        import tomli as tomllib  # type: ignore[no-redef]
+    except ModuleNotFoundError:
+        import subprocess
+
+        subprocess.check_call(  # noqa: S603
+            [sys.executable, "-m", "pip", "install", "tomli>=2.0.0"],
+            stdout=subprocess.DEVNULL,
+        )
+        import tomli as tomllib  # type: ignore[no-redef]
 
 _cache: dict[str, dict[str, str]] = {}
 

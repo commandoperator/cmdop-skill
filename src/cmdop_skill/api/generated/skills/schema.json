@@ -1653,6 +1653,10 @@
                         "type": "string",
                         "description": "Version installed"
                     },
+                    "model": {
+                        "type": "string",
+                        "description": "LLM model identifier (e.g. anthropic/claude-opus-4-6)"
+                    },
                     "install_command": {
                         "type": "string",
                         "description": "Install command, e.g. \"pip install cmdop-browser==1.0.8\""
@@ -1697,6 +1701,7 @@
                     "files",
                     "install_command",
                     "meta",
+                    "model",
                     "packages",
                     "readme",
                     "run_check",
@@ -2357,6 +2362,11 @@
                     "changelog": {
                         "type": "string",
                         "description": "What changed in this version"
+                    },
+                    "model": {
+                        "type": "string",
+                        "description": "LLM model name parsed from skill.md frontmatter (e.g. anthropic/claude-opus-4.6)",
+                        "maxLength": 100
                     },
                     "created_at": {
                         "type": "string",

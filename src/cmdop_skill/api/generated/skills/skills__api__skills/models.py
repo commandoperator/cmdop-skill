@@ -184,6 +184,11 @@ class SkillVersion(BaseModel):
     version: str = Field(description='Semantic version string (e.g., 1...', max_length=20)
     skill_md: str | None = Field(None, description='Skill description / system promp...')
     changelog: str | None = Field(None, description='What changed in this version')
+    model: str | None = Field(
+    None,
+    description='LLM model name parsed from skill...',
+    max_length=100,
+)
     created_at: datetime.datetime = ...
 
 
@@ -458,6 +463,7 @@ class SkillInstall(BaseModel):
 
     slug: str = Field(description='Skill slug')
     version: str = Field(description='Version installed')
+    model: str = Field(description='LLM model identifier (e.g. anthr...')
     install_command: str = Field(description='Install command, e.g. "pip insta...')
     readme: str = Field(description='Package README markdown')
     skill_md: str = Field(description='Skill system prompt / descriptio...')
