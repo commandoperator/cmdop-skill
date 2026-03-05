@@ -166,6 +166,30 @@ class SkillCreate(BaseModel):
 
 
 
+class SkillReview(BaseModel):
+    """
+    Serializer for SkillReview in API responses.
+
+    Response model (includes read-only fields).
+    """
+
+    model_config = ConfigDict(
+        validate_assignment=True,
+        extra="allow",
+        frozen=False,
+    )
+
+    id: str = ...
+    author_handle: Any = ...
+    author_display_name: Any = ...
+    author_avatar_url: str = ...
+    body: Any = ...
+    is_rewritten: bool = ...
+    source: Any = ...
+    upstream_created_at: datetime.datetime | None = None
+
+
+
 class SkillVersion(BaseModel):
     """
     Serializer for SkillVersion model.
@@ -193,30 +217,6 @@ class SkillVersion(BaseModel):
 
 
 
-class SkillReview(BaseModel):
-    """
-    Serializer for SkillReview in API responses.
-
-    Response model (includes read-only fields).
-    """
-
-    model_config = ConfigDict(
-        validate_assignment=True,
-        extra="allow",
-        frozen=False,
-    )
-
-    id: str = ...
-    author_handle: Any = ...
-    author_display_name: Any = ...
-    author_avatar_url: str = ...
-    body: Any = ...
-    is_rewritten: bool = ...
-    source: Any = ...
-    upstream_created_at: datetime.datetime | None = None
-
-
-
 class SkillDetail(BaseModel):
     """
     Serializer for skill detail view (full data).
@@ -241,7 +241,7 @@ class SkillDetail(BaseModel):
     readme: str | None = Field(None, description='Package README markdown, updated...')
     author: int = ...
     author_username: Any = ...
-    category: SkillCategory = ...
+    category: SkillCategory | None = None
     tags: list[SkillTag] = ...
     visibility: PatchedSkillUpdateRequestVisibility | None = Field(
     None,
@@ -412,24 +412,6 @@ class SkillMeta(BaseModel):
 
 
 
-class SkillPackages(BaseModel):
-    """
-    Serializer for skill package dependencies.
-
-    Response model (includes read-only fields).
-    """
-
-    model_config = ConfigDict(
-        validate_assignment=True,
-        extra="allow",
-        frozen=False,
-    )
-
-    pip: list[str] | None = Field(None, description='Python pip packages, e.g. ["http...')
-    npm: list[str] | None = Field(None, description='Node npm packages, e.g. ["axios@...')
-
-
-
 class SkillFile(BaseModel):
     """
     Serializer for a single file in a skill version.
@@ -445,6 +427,24 @@ class SkillFile(BaseModel):
 
     path: str = Field(description='Relative file path, e.g. "skill....')
     content: str = Field(description='UTF-8 text content')
+
+
+
+class SkillPackages(BaseModel):
+    """
+    Serializer for skill package dependencies.
+
+    Response model (includes read-only fields).
+    """
+
+    model_config = ConfigDict(
+        validate_assignment=True,
+        extra="allow",
+        frozen=False,
+    )
+
+    pip: list[str] | None = Field(None, description='Python pip packages, e.g. ["http...')
+    npm: list[str] | None = Field(None, description='Node npm packages, e.g. ["axios@...')
 
 
 
