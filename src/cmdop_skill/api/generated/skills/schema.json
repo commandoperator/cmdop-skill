@@ -1586,6 +1586,14 @@
                         "type": "string",
                         "readOnly": true
                     },
+                    "seo": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/SkillSeo"
+                            }
+                        ],
+                        "readOnly": true
+                    },
                     "created_at": {
                         "type": "string",
                         "format": "date-time",
@@ -1613,6 +1621,7 @@
                     "parsed_meta",
                     "review_count",
                     "reviews",
+                    "seo",
                     "short_description",
                     "slug",
                     "star_count",
@@ -2077,6 +2086,45 @@
                     "is_rewritten",
                     "source",
                     "upstream_created_at"
+                ]
+            },
+            "SkillSeo": {
+                "type": "object",
+                "description": "Ready-to-use SEO fields for a skill detail page.",
+                "properties": {
+                    "title": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "keywords": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "og_title": {
+                        "type": "string"
+                    },
+                    "og_description": {
+                        "type": "string"
+                    },
+                    "og_image": {
+                        "type": "string"
+                    },
+                    "canonical": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "canonical",
+                    "description",
+                    "keywords",
+                    "og_description",
+                    "og_image",
+                    "og_title",
+                    "title"
                 ]
             },
             "SkillStar": {
