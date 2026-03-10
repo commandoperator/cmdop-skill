@@ -1,5 +1,7 @@
 # cmdop-skill
 
+![cmdop-skill](https://raw.githubusercontent.com/commandoperator/cmdop-skill/main/static/cmdop_skill.webp)
+
 Build and publish CMDOP skills.
 
 ## Install
