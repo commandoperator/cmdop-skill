@@ -181,11 +181,11 @@ class SyncSkillsSkillsAPI:
         # Build multipart form data
         _files = {}
         _form_data = {}
+        if data.icon is not None:
+            _files['icon'] = data.icon
+        if data.cover is not None:
+            _files['cover'] = data.cover
         _raw_data = data.model_dump(mode="json", exclude_unset=True, exclude_none=True)
-        if 'icon' in _raw_data and _raw_data['icon'] is not None:
-            _files['icon'] = _raw_data['icon']
-        if 'cover' in _raw_data and _raw_data['cover'] is not None:
-            _files['cover'] = _raw_data['cover']
         if 'name' in _raw_data and _raw_data['name'] is not None:
             _form_data['name'] = _raw_data['name']
         if 'category' in _raw_data and _raw_data['category'] is not None:
@@ -258,6 +258,7 @@ class SyncSkillsSkillsAPI:
             raise httpx.HTTPStatusError(
                 msg, request=response.request, response=response
             )
+        return None
 
 
     def skills_install_create(self, slug: str) -> SkillInstall:
@@ -298,6 +299,7 @@ class SyncSkillsSkillsAPI:
             raise httpx.HTTPStatusError(
                 msg, request=response.request, response=response
             )
+        return None
 
 
     def skills_publish_status_retrieve(self, slug: str) -> None:
@@ -317,6 +319,7 @@ class SyncSkillsSkillsAPI:
             raise httpx.HTTPStatusError(
                 msg, request=response.request, response=response
             )
+        return None
 
 
     def skills_reviews_list(
@@ -384,11 +387,11 @@ class SyncSkillsSkillsAPI:
         # Build multipart form data
         _files = {}
         _form_data = {}
+        if data.icon is not None:
+            _files['icon'] = data.icon
+        if data.cover is not None:
+            _files['cover'] = data.cover
         _raw_data = data.model_dump(mode="json", exclude_unset=True, exclude_none=True)
-        if 'icon' in _raw_data and _raw_data['icon'] is not None:
-            _files['icon'] = _raw_data['icon']
-        if 'cover' in _raw_data and _raw_data['cover'] is not None:
-            _files['cover'] = _raw_data['cover']
         if 'name' in _raw_data and _raw_data['name'] is not None:
             _form_data['name'] = _raw_data['name']
         if 'category' in _raw_data and _raw_data['category'] is not None:
@@ -409,6 +412,7 @@ class SyncSkillsSkillsAPI:
             raise httpx.HTTPStatusError(
                 msg, request=response.request, response=response
             )
+        return None
 
 
     def skills_upload_cover_create(
@@ -426,9 +430,8 @@ class SyncSkillsSkillsAPI:
         # Build multipart form data
         _files = {}
         _form_data = {}
-        _raw_data = data.model_dump(mode="json", exclude_unset=True, exclude_none=True)
-        if 'cover' in _raw_data and _raw_data['cover'] is not None:
-            _files['cover'] = _raw_data['cover']
+        if data.cover is not None:
+            _files['cover'] = data.cover
         response = self._client.post(url, files=_files if _files else None, data=_form_data if _form_data else None)
         if not response.is_success:
             try:
@@ -439,6 +442,7 @@ class SyncSkillsSkillsAPI:
             raise httpx.HTTPStatusError(
                 msg, request=response.request, response=response
             )
+        return None
 
 
     def skills_upload_cover_destroy(self, slug: str) -> None:
@@ -459,6 +463,7 @@ class SyncSkillsSkillsAPI:
             raise httpx.HTTPStatusError(
                 msg, request=response.request, response=response
             )
+        return None
 
 
     def skills_verify_create(self, slug: str, data: SkillListRequest) -> None:
@@ -471,11 +476,11 @@ class SyncSkillsSkillsAPI:
         # Build multipart form data
         _files = {}
         _form_data = {}
+        if data.icon is not None:
+            _files['icon'] = data.icon
+        if data.cover is not None:
+            _files['cover'] = data.cover
         _raw_data = data.model_dump(mode="json", exclude_unset=True, exclude_none=True)
-        if 'icon' in _raw_data and _raw_data['icon'] is not None:
-            _files['icon'] = _raw_data['icon']
-        if 'cover' in _raw_data and _raw_data['cover'] is not None:
-            _files['cover'] = _raw_data['cover']
         if 'name' in _raw_data and _raw_data['name'] is not None:
             _form_data['name'] = _raw_data['name']
         if 'category' in _raw_data and _raw_data['category'] is not None:
@@ -496,6 +501,7 @@ class SyncSkillsSkillsAPI:
             raise httpx.HTTPStatusError(
                 msg, request=response.request, response=response
             )
+        return None
 
 
     def skills_versions_list(

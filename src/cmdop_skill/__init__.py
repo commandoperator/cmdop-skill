@@ -15,6 +15,7 @@ Eliminates boilerplate by turning async functions into CLI subcommands::
 """
 
 from cmdop_skill._arg import Arg
+from cmdop_skill._cache import CacheEntry, SkillCache
 from cmdop_skill._manifest import generate_manifest
 from cmdop_skill._output import format_error, json_output, wrap_result
 from cmdop_skill._publish import publish_skill
@@ -25,7 +26,9 @@ from cmdop_skill._testing import TestClient
 
 __all__ = [
     "Arg",
+    "CacheEntry",
     "Skill",
+    "SkillCache",
     "SkillCategory",
     "SkillConfig",
     "TestClient",
