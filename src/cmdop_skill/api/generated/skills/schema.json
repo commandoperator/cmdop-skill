@@ -2403,7 +2403,7 @@
                     "version": {
                         "type": "string",
                         "description": "Semantic version string (e.g., 1.0.0)",
-                        "maxLength": 20
+                        "maxLength": 50
                     },
                     "skill_md": {
                         "type": "string",
@@ -2417,7 +2417,7 @@
                     "model": {
                         "type": "string",
                         "description": "LLM model name parsed from skill.md frontmatter (e.g. anthropic/claude-opus-4.6)",
-                        "maxLength": 100
+                        "maxLength": 255
                     },
                     "created_at": {
                         "type": "string",

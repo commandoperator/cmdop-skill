@@ -9,6 +9,300 @@ from pydantic import BaseModel, ConfigDict, Field
 from ..enums import PatchedSkillUpdateRequestCategory, PatchedSkillUpdateRequestStatus, PatchedSkillUpdateRequestVisibility
 
 
+class SkillListRequest(BaseModel):
+    """
+    Serializer for skill list view (lightweight).
+
+    Request model (no read-only fields).
+    """
+
+    model_config = ConfigDict(
+        validate_assignment=True,
+        extra="allow",
+        frozen=False,
+    )
+
+    name: str = Field(min_length=1, max_length=150)
+    category: str | None = None
+    visibility: PatchedSkillUpdateRequestVisibility | None = Field(
+    None,
+    description='* `public` - Public * `private` ...',
+)
+    status: PatchedSkillUpdateRequestStatus | None = Field(
+    None,
+    description='* `draft` - Draft * `processing`...',
+)
+    icon: Any | None = Field(None, description='Card thumbnail image')
+    cover: Any | None = Field(None, description='Detail page banner image')
+
+
+
+class SkillUpdateRequest(BaseModel):
+    """
+    Serializer for updating a skill. Note: short_description, description, and
+    tags are auto-filled during publish (from manifest + LLM parsing).
+
+    Request model (no read-only fields).
+    """
+
+    model_config = ConfigDict(
+        validate_assignment=True,
+        extra="allow",
+        frozen=False,
+    )
+
+    name: str = Field(min_length=1, max_length=150)
+    category: PatchedSkillUpdateRequestCategory | None = Field(
+    None,
+    description='Category slug. Must be an existi...',
+)
+    visibility: PatchedSkillUpdateRequestVisibility | None = Field(
+    None,
+    description='* `public` - Public * `private` ...',
+)
+    status: PatchedSkillUpdateRequestStatus | None = Field(
+    None,
+    description='* `draft` - Draft * `processing`...',
+)
+    icon: Any | None = None
+    cover: Any | None = None
+    repository_url: str | None = Field(
+    None,
+    description='Link to source code repository',
+    max_length=200,
+)
+
+
+
+class SkillVersion(BaseModel):
+    """
+    Serializer for SkillVersion model.
+
+    Response model (includes read-only fields).
+    """
+
+    model_config = ConfigDict(
+        validate_assignment=True,
+        extra="allow",
+        frozen=False,
+    )
+
+    id: str = ...
+    skill: str = ...
+    version: str = Field(description='Semantic version string (e.g., 1...', max_length=50)
+    skill_md: str | None = Field(None, description='Skill description / system promp...')
+    changelog: str | None = Field(None, description='What changed in this version')
+    model: str | None = Field(
+    None,
+    description='LLM model name parsed from skill...',
+    max_length=255,
+)
+    created_at: datetime.datetime = ...
+
+
+
+class SkillUploadCoverResponse(BaseModel):
+    """
+    Response serializer for cover image upload.
+
+    Response model (includes read-only fields).
+    """
+
+    model_config = ConfigDict(
+        validate_assignment=True,
+        extra="allow",
+        frozen=False,
+    )
+
+    cover: str = Field(description='URL of the uploaded cover image')
+
+
+
+class SkillCategory(BaseModel):
+    """
+    Serializer for SkillCategory model.
+
+    Response model (includes read-only fields).
+    """
+
+    model_config = ConfigDict(
+        validate_assignment=True,
+        extra="allow",
+        frozen=False,
+    )
+
+    id: str = ...
+    name: str = Field(max_length=100)
+    slug: Any = Field(pattern='^[-a-zA-Z0-9_]+$')
+    description: str | None = None
+    icon: str | None = Field(
+    None,
+    description='Icon identifier (e.g., material ...',
+    max_length=50,
+)
+    ordering: int | None = Field(None, ge=0, le=2147483647)
+    skill_count: int = ...
+
+
+
+class SkillCreate(BaseModel):
+    """
+    Serializer for creating a skill. Only name is required. Category, tags,
+    description, visibility are auto-assigned during publish (LLM parses
+    manifest).
+
+    Response model (includes read-only fields).
+    """
+
+    model_config = ConfigDict(
+        validate_assignment=True,
+        extra="allow",
+        frozen=False,
+    )
+
+    name: str = Field(max_length=150)
+
+
+
+class SkillUploadCoverRequestRequest(BaseModel):
+    """
+    Request serializer for cover image upload.
+
+    Request model (no read-only fields).
+    """
+
+    model_config = ConfigDict(
+        validate_assignment=True,
+        extra="allow",
+        frozen=False,
+    )
+
+    cover: Any = Field(description='Cover image file')
+
+
+
+class SkillUpdate(BaseModel):
+    """
+    Serializer for updating a skill. Note: short_description, description, and
+    tags are auto-filled during publish (from manifest + LLM parsing).
+
+    Response model (includes read-only fields).
+    """
+
+    model_config = ConfigDict(
+        validate_assignment=True,
+        extra="allow",
+        frozen=False,
+    )
+
+    name: str = Field(max_length=150)
+    category: PatchedSkillUpdateRequestCategory | None = Field(
+    None,
+    description='Category slug. Must be an existi...',
+)
+    visibility: PatchedSkillUpdateRequestVisibility | None = Field(
+    None,
+    description='* `public` - Public * `private` ...',
+)
+    status: PatchedSkillUpdateRequestStatus | None = Field(
+    None,
+    description='* `draft` - Draft * `processing`...',
+)
+    icon: str | None = None
+    cover: str | None = None
+    repository_url: str | None = Field(
+    None,
+    description='Link to source code repository',
+    max_length=200,
+)
+
+
+
+class SkillPackages(BaseModel):
+    """
+    Serializer for skill package dependencies.
+
+    Response model (includes read-only fields).
+    """
+
+    model_config = ConfigDict(
+        validate_assignment=True,
+        extra="allow",
+        frozen=False,
+    )
+
+    pip: list[str] | None = Field(None, description='Python pip packages, e.g. ["http...')
+    npm: list[str] | None = Field(None, description='Node npm packages, e.g. ["axios@...')
+
+
+
+class SkillFile(BaseModel):
+    """
+    Serializer for a single file in a skill version.
+
+    Response model (includes read-only fields).
+    """
+
+    model_config = ConfigDict(
+        validate_assignment=True,
+        extra="allow",
+        frozen=False,
+    )
+
+    path: str = Field(description='Relative file path, e.g. "skill....')
+    content: str = Field(description='UTF-8 text content')
+
+
+
+class SkillMeta(BaseModel):
+    """
+    Install-time metadata written to meta.json inside the skill directory.
+
+    Response model (includes read-only fields).
+    """
+
+    model_config = ConfigDict(
+        validate_assignment=True,
+        extra="allow",
+        frozen=False,
+    )
+
+    installed_at: datetime.datetime = Field(description='When the skill was installed (IS...')
+    installed_from: str = Field(description='Installation source: "marketplac...')
+    installed_version: str = Field(description='Version at install time')
+    updated_at: datetime.datetime | None = Field(
+    None,
+    description='When the skill was last updated ...',
+)
+
+
+
+class SkillInstall(BaseModel):
+    """
+    Response serializer for install action.
+
+    Response model (includes read-only fields).
+    """
+
+    model_config = ConfigDict(
+        validate_assignment=True,
+        extra="allow",
+        frozen=False,
+    )
+
+    slug: str = Field(description='Skill slug')
+    version: str = Field(description='Version installed')
+    model: str = Field(description='LLM model identifier (e.g. anthr...')
+    install_command: str = Field(description='Install command, e.g. "pip insta...')
+    readme: str = Field(description='Package README markdown')
+    skill_md: str = Field(description='Skill system prompt / descriptio...')
+    files: list[SkillFile] = Field(description='All files that make up this skill')
+    packages: SkillPackages = ...
+    run_check: str = Field(description='Command to verify skill, e.g. "p...')
+    meta: SkillMeta = ...
+
+
+
 class SkillTag(BaseModel):
     """
     Serializer for SkillTag model.
@@ -125,9 +419,33 @@ class SkillReview(BaseModel):
 
 
 
-class SkillCategory(BaseModel):
+class PaginatedSkillReviewList(BaseModel):
     """
-    Serializer for SkillCategory model.
+    
+    Response model (includes read-only fields).
+    """
+
+    model_config = ConfigDict(
+        validate_assignment=True,
+        extra="allow",
+        frozen=False,
+    )
+
+    count: int = Field(description='Total number of items across all...')
+    page: int = Field(description='Current page number (1-based)')
+    pages: int = Field(description='Total number of pages')
+    page_size: int = Field(description='Number of items per page')
+    has_next: bool = Field(description='Whether there is a next page')
+    has_previous: bool = Field(description='Whether there is a previous page')
+    next_page: int | None = Field(None, description='Next page number (null if no nex...')
+    previous_page: int | None = Field(None, description='Previous page number (null if no...')
+    results: list[SkillReview] = Field(description='Array of items for current page')
+
+
+
+class SkillStar(BaseModel):
+    """
+    Response serializer for star toggle action.
 
     Response model (includes read-only fields).
     """
@@ -138,25 +456,17 @@ class SkillCategory(BaseModel):
         frozen=False,
     )
 
-    id: str = ...
-    name: str = Field(max_length=100)
-    slug: Any = Field(pattern='^[-a-zA-Z0-9_]+$')
-    description: str | None = None
-    icon: str | None = Field(
-    None,
-    description='Icon identifier (e.g., material ...',
-    max_length=50,
-)
-    ordering: int | None = Field(None, ge=0, le=2147483647)
-    skill_count: int = ...
+    starred: bool = Field(description='Whether the skill is now starred')
+    star_count: int = Field(description='Updated star count')
 
 
 
-class SkillVersion(BaseModel):
+class SkillPublishRequest(BaseModel):
     """
-    Serializer for SkillVersion model.
+    Request serializer for publishing a new skill version. SDK sends raw
+    manifest text — Django uses LLM to parse it.
 
-    Response model (includes read-only fields).
+    Request model (no read-only fields).
     """
 
     model_config = ConfigDict(
@@ -165,17 +475,70 @@ class SkillVersion(BaseModel):
         frozen=False,
     )
 
-    id: str = ...
-    skill: str = ...
-    version: str = Field(description='Semantic version string (e.g., 1...', max_length=20)
-    skill_md: str | None = Field(None, description='Skill description / system promp...')
-    changelog: str | None = Field(None, description='What changed in this version')
-    model: str | None = Field(
+    raw_manifest: str = Field(description='Raw content of pyproject.toml, p...', min_length=1)
+    skill_md: str | None = Field(
     None,
-    description='LLM model name parsed from skill...',
-    max_length=100,
+    description='Skill description / system promp...',
+    min_length=1,
 )
-    created_at: datetime.datetime = ...
+    readme: str | None = Field(None, description='Package README markdown', min_length=1)
+    changelog: str | None = Field(None, description='What changed in this version', min_length=1)
+
+
+
+class PatchedSkillUpdateRequest(BaseModel):
+    """
+    Serializer for updating a skill. Note: short_description, description, and
+    tags are auto-filled during publish (from manifest + LLM parsing).
+
+    Request model (no read-only fields).
+    """
+
+    model_config = ConfigDict(
+        validate_assignment=True,
+        extra="allow",
+        frozen=False,
+    )
+
+    name: str | None = Field(None, min_length=1, max_length=150)
+    category: PatchedSkillUpdateRequestCategory | None = Field(
+    None,
+    description='Category slug. Must be an existi...',
+)
+    visibility: PatchedSkillUpdateRequestVisibility | None = Field(
+    None,
+    description='* `public` - Public * `private` ...',
+)
+    status: PatchedSkillUpdateRequestStatus | None = Field(
+    None,
+    description='* `draft` - Draft * `processing`...',
+)
+    icon: Any | None = None
+    cover: Any | None = None
+    repository_url: str | None = Field(
+    None,
+    description='Link to source code repository',
+    max_length=200,
+)
+
+
+
+class SkillCreateRequest(BaseModel):
+    """
+    Serializer for creating a skill. Only name is required. Category, tags,
+    description, visibility are auto-assigned during publish (LLM parses
+    manifest).
+
+    Request model (no read-only fields).
+    """
+
+    model_config = ConfigDict(
+        validate_assignment=True,
+        extra="allow",
+        frozen=False,
+    )
+
+    name: str = Field(min_length=1, max_length=150)
 
 
 
@@ -261,369 +624,6 @@ class SkillDetail(BaseModel):
     seo: SkillSeo = ...
     created_at: datetime.datetime = ...
     updated_at: datetime.datetime = ...
-
-
-
-class PaginatedSkillReviewList(BaseModel):
-    """
-    
-    Response model (includes read-only fields).
-    """
-
-    model_config = ConfigDict(
-        validate_assignment=True,
-        extra="allow",
-        frozen=False,
-    )
-
-    count: int = Field(description='Total number of items across all...')
-    page: int = Field(description='Current page number (1-based)')
-    pages: int = Field(description='Total number of pages')
-    page_size: int = Field(description='Number of items per page')
-    has_next: bool = Field(description='Whether there is a next page')
-    has_previous: bool = Field(description='Whether there is a previous page')
-    next_page: int | None = Field(None, description='Next page number (null if no nex...')
-    previous_page: int | None = Field(None, description='Previous page number (null if no...')
-    results: list[SkillReview] = Field(description='Array of items for current page')
-
-
-
-class SkillUpdate(BaseModel):
-    """
-    Serializer for updating a skill. Note: short_description, description, and
-    tags are auto-filled during publish (from manifest + LLM parsing).
-
-    Response model (includes read-only fields).
-    """
-
-    model_config = ConfigDict(
-        validate_assignment=True,
-        extra="allow",
-        frozen=False,
-    )
-
-    name: str = Field(max_length=150)
-    category: PatchedSkillUpdateRequestCategory | None = Field(
-    None,
-    description='Category slug. Must be an existi...',
-)
-    visibility: PatchedSkillUpdateRequestVisibility | None = Field(
-    None,
-    description='* `public` - Public * `private` ...',
-)
-    status: PatchedSkillUpdateRequestStatus | None = Field(
-    None,
-    description='* `draft` - Draft * `processing`...',
-)
-    icon: str | None = None
-    cover: str | None = None
-    repository_url: str | None = Field(
-    None,
-    description='Link to source code repository',
-    max_length=200,
-)
-
-
-
-class SkillListRequest(BaseModel):
-    """
-    Serializer for skill list view (lightweight).
-
-    Request model (no read-only fields).
-    """
-
-    model_config = ConfigDict(
-        validate_assignment=True,
-        extra="allow",
-        frozen=False,
-    )
-
-    name: str = Field(min_length=1, max_length=150)
-    category: str | None = None
-    visibility: PatchedSkillUpdateRequestVisibility | None = Field(
-    None,
-    description='* `public` - Public * `private` ...',
-)
-    status: PatchedSkillUpdateRequestStatus | None = Field(
-    None,
-    description='* `draft` - Draft * `processing`...',
-)
-    icon: Any | None = Field(None, description='Card thumbnail image')
-    cover: Any | None = Field(None, description='Detail page banner image')
-
-
-
-class SkillMeta(BaseModel):
-    """
-    Install-time metadata written to meta.json inside the skill directory.
-
-    Response model (includes read-only fields).
-    """
-
-    model_config = ConfigDict(
-        validate_assignment=True,
-        extra="allow",
-        frozen=False,
-    )
-
-    installed_at: datetime.datetime = Field(description='When the skill was installed (IS...')
-    installed_from: str = Field(description='Installation source: "marketplac...')
-    installed_version: str = Field(description='Version at install time')
-    updated_at: datetime.datetime | None = Field(
-    None,
-    description='When the skill was last updated ...',
-)
-
-
-
-class SkillPackages(BaseModel):
-    """
-    Serializer for skill package dependencies.
-
-    Response model (includes read-only fields).
-    """
-
-    model_config = ConfigDict(
-        validate_assignment=True,
-        extra="allow",
-        frozen=False,
-    )
-
-    pip: list[str] | None = Field(None, description='Python pip packages, e.g. ["http...')
-    npm: list[str] | None = Field(None, description='Node npm packages, e.g. ["axios@...')
-
-
-
-class SkillFile(BaseModel):
-    """
-    Serializer for a single file in a skill version.
-
-    Response model (includes read-only fields).
-    """
-
-    model_config = ConfigDict(
-        validate_assignment=True,
-        extra="allow",
-        frozen=False,
-    )
-
-    path: str = Field(description='Relative file path, e.g. "skill....')
-    content: str = Field(description='UTF-8 text content')
-
-
-
-class SkillInstall(BaseModel):
-    """
-    Response serializer for install action.
-
-    Response model (includes read-only fields).
-    """
-
-    model_config = ConfigDict(
-        validate_assignment=True,
-        extra="allow",
-        frozen=False,
-    )
-
-    slug: str = Field(description='Skill slug')
-    version: str = Field(description='Version installed')
-    model: str = Field(description='LLM model identifier (e.g. anthr...')
-    install_command: str = Field(description='Install command, e.g. "pip insta...')
-    readme: str = Field(description='Package README markdown')
-    skill_md: str = Field(description='Skill system prompt / descriptio...')
-    files: list[SkillFile] = Field(description='All files that make up this skill')
-    packages: SkillPackages = ...
-    run_check: str = Field(description='Command to verify skill, e.g. "p...')
-    meta: SkillMeta = ...
-
-
-
-class SkillUpdateRequest(BaseModel):
-    """
-    Serializer for updating a skill. Note: short_description, description, and
-    tags are auto-filled during publish (from manifest + LLM parsing).
-
-    Request model (no read-only fields).
-    """
-
-    model_config = ConfigDict(
-        validate_assignment=True,
-        extra="allow",
-        frozen=False,
-    )
-
-    name: str = Field(min_length=1, max_length=150)
-    category: PatchedSkillUpdateRequestCategory | None = Field(
-    None,
-    description='Category slug. Must be an existi...',
-)
-    visibility: PatchedSkillUpdateRequestVisibility | None = Field(
-    None,
-    description='* `public` - Public * `private` ...',
-)
-    status: PatchedSkillUpdateRequestStatus | None = Field(
-    None,
-    description='* `draft` - Draft * `processing`...',
-)
-    icon: Any | None = None
-    cover: Any | None = None
-    repository_url: str | None = Field(
-    None,
-    description='Link to source code repository',
-    max_length=200,
-)
-
-
-
-class SkillPublishRequest(BaseModel):
-    """
-    Request serializer for publishing a new skill version. SDK sends raw
-    manifest text — Django uses LLM to parse it.
-
-    Request model (no read-only fields).
-    """
-
-    model_config = ConfigDict(
-        validate_assignment=True,
-        extra="allow",
-        frozen=False,
-    )
-
-    raw_manifest: str = Field(description='Raw content of pyproject.toml, p...', min_length=1)
-    skill_md: str | None = Field(
-    None,
-    description='Skill description / system promp...',
-    min_length=1,
-)
-    readme: str | None = Field(None, description='Package README markdown', min_length=1)
-    changelog: str | None = Field(None, description='What changed in this version', min_length=1)
-
-
-
-class PatchedSkillUpdateRequest(BaseModel):
-    """
-    Serializer for updating a skill. Note: short_description, description, and
-    tags are auto-filled during publish (from manifest + LLM parsing).
-
-    Request model (no read-only fields).
-    """
-
-    model_config = ConfigDict(
-        validate_assignment=True,
-        extra="allow",
-        frozen=False,
-    )
-
-    name: str | None = Field(None, min_length=1, max_length=150)
-    category: PatchedSkillUpdateRequestCategory | None = Field(
-    None,
-    description='Category slug. Must be an existi...',
-)
-    visibility: PatchedSkillUpdateRequestVisibility | None = Field(
-    None,
-    description='* `public` - Public * `private` ...',
-)
-    status: PatchedSkillUpdateRequestStatus | None = Field(
-    None,
-    description='* `draft` - Draft * `processing`...',
-)
-    icon: Any | None = None
-    cover: Any | None = None
-    repository_url: str | None = Field(
-    None,
-    description='Link to source code repository',
-    max_length=200,
-)
-
-
-
-class SkillUploadCoverResponse(BaseModel):
-    """
-    Response serializer for cover image upload.
-
-    Response model (includes read-only fields).
-    """
-
-    model_config = ConfigDict(
-        validate_assignment=True,
-        extra="allow",
-        frozen=False,
-    )
-
-    cover: str = Field(description='URL of the uploaded cover image')
-
-
-
-class SkillStar(BaseModel):
-    """
-    Response serializer for star toggle action.
-
-    Response model (includes read-only fields).
-    """
-
-    model_config = ConfigDict(
-        validate_assignment=True,
-        extra="allow",
-        frozen=False,
-    )
-
-    starred: bool = Field(description='Whether the skill is now starred')
-    star_count: int = Field(description='Updated star count')
-
-
-
-class SkillCreate(BaseModel):
-    """
-    Serializer for creating a skill. Only name is required. Category, tags,
-    description, visibility are auto-assigned during publish (LLM parses
-    manifest).
-
-    Response model (includes read-only fields).
-    """
-
-    model_config = ConfigDict(
-        validate_assignment=True,
-        extra="allow",
-        frozen=False,
-    )
-
-    name: str = Field(max_length=150)
-
-
-
-class SkillCreateRequest(BaseModel):
-    """
-    Serializer for creating a skill. Only name is required. Category, tags,
-    description, visibility are auto-assigned during publish (LLM parses
-    manifest).
-
-    Request model (no read-only fields).
-    """
-
-    model_config = ConfigDict(
-        validate_assignment=True,
-        extra="allow",
-        frozen=False,
-    )
-
-    name: str = Field(min_length=1, max_length=150)
-
-
-
-class SkillUploadCoverRequestRequest(BaseModel):
-    """
-    Request serializer for cover image upload.
-
-    Request model (no read-only fields).
-    """
-
-    model_config = ConfigDict(
-        validate_assignment=True,
-        extra="allow",
-        frozen=False,
-    )
-
-    cover: Any = Field(description='Cover image file')
 
 
 
