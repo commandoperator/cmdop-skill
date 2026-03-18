@@ -1,6 +1,6 @@
 # cmdop-skill
 
-![cmdop-skill](https://raw.githubusercontent.com/markolofsen/assets/main/libs/cmdop_skill.webp)
+![cmdop-skill](https://raw.githubusercontent.com/markolofsen/assets/main/libs/cmdop/cmdop-skill.webp)
 
 Build and publish CMDOP skills.
 
